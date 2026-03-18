@@ -109,8 +109,10 @@ class DropTableWidget(QTableWidget):
         urls = event.mimeData().urls()
         paths = [url.toLocalFile() for url in urls]
         main = self.window()
-        if hasattr(main, "add_files"):
-            main.add_files(paths)
+
+        if hasattr(main, "handle_dropped_files"):
+            main.handle_dropped_files(paths)
+
         event.acceptProposedAction()
 
 
@@ -658,12 +660,24 @@ class MainWindow(QMainWindow):
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasUrls(): event.acceptProposedAction()
 
+    def handle_dropped_files(self, paths: list):
+        csv_paths = [p for p in paths if p.lower().endswith(".csv")]
+        target_paths = [p for p in paths if p.lower().endswith((".pdf", ".xlsx"))]
+
+        # 1. CSV 처리: 정확히 1개일 때만 자동 로드
+        if len(csv_paths) == 1:
+            self._load_csv(csv_paths[0])
+        elif len(csv_paths) > 1:
+            self._log("⚠️ 여러 개의 CSV가 감지되었습니다. 기준 파일은 하나씩만 등록 가능합니다.")
+            QMessageBox.information(self, "알림", "CSV 파일은 한 번에 하나만 등록할 수 있습니다.")
+
+        # 2. PDF/Excel 처리: 목록에 추가
+        if target_paths:
+            self.add_files(target_paths)
+
+    # 윈도우 빈 공간에 드롭했을 때 처리
     def dropEvent(self, event: QDropEvent):
         urls = event.mimeData().urls()
-        for url in urls:
-            path = url.toLocalFile()
-            if path.lower().endswith(".csv"):
-                self._load_csv(path)
-            else:
-                self.add_files([path])
+        paths = [url.toLocalFile() for url in urls]
+        self.handle_dropped_files(paths)
         event.acceptProposedAction()
