@@ -11,10 +11,10 @@ import warnings
 from pathlib import Path
 from typing import Set, Dict
 
-import pandas as pd
 import openpyxl
-from openpyxl.styles import PatternFill
+import pandas as pd
 from openpyxl.formatting.rule import FormulaRule
+from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 
 # 컬럼명 상수
@@ -136,9 +136,14 @@ def process_excel(input_path: str, keywords: Set[str]) -> Dict:
     output_path = src.parent / f"output_{src.name}"
 
     # 1단계: pandas 고속 로딩 (openpyxl 경고 억제)
+    # 1단계: pandas 로딩 시 header=None 추가
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        df = pd.read_excel(str(src), dtype=str, engine="openpyxl")
+        # 💡 header=None: 첫 줄을 헤더로 쓰지 않고 0, 1, 2... 숫자로 이름을 붙임
+        df = pd.read_excel(str(src), dtype=str, engine="openpyxl", header=None)
+
+    # 💡 컬럼 개수만큼 A, B, C... 문자로 변환하여 지정
+    df.columns = [get_column_letter(i + 1) for i in range(len(df.columns))]
 
     df.fillna("", inplace=True)
 
