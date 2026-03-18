@@ -43,9 +43,10 @@ def _detect_keywords_in_row(row: pd.Series, pattern: re.Pattern) -> Set[str]:
 
 
 def _build_pattern(keywords: Set[str]) -> re.Pattern:
-    """키워드 set → 정규식 패턴 (대소문자 구분 유지)"""
+    """키워드 set → 정규식 패턴 (대소문자 무시 설정 추가)"""
     escaped = sorted(map(re.escape, keywords), key=len, reverse=True)
-    return re.compile("|".join(escaped))
+    # 💡 re.IGNORECASE 플래그를 추가하여 대소문자 구분을 없앱니다.
+    return re.compile("|".join(escaped), re.IGNORECASE)
 
 
 # ──────────────────────────────────────────────
