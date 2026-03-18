@@ -45,11 +45,24 @@ class CustomTitleBar(QWidget):
         layout.setSpacing(0)
 
         # 타이틀 텍스트
-        title = QLabel("🚫 학교생활기록부 일괄 점검 프로그램 v1.0")
-        title.setStyleSheet("font-size: 16px; font-weight: bold; color: #2B2B2B;")
+        title = QLabel("🔍 학교생활기록부 일괄 점검 프로그램 v2026.03.16")
+        title.setStyleSheet(
+            "color: #343A40; font-size: 16px; font-weight: bold; font-family: 'Malgun Gothic';")
         layout.addWidget(title)
 
         layout.addStretch()
+
+        # 💡 제작자 정보 버튼 추가
+        self.info_btn = QPushButton("ⓘ")
+        self.info_btn.setFixedSize(45, 40)
+        self.info_btn.setStyleSheet("""
+        QPushButton {
+            border: none; background: transparent; color: #6C757D; font-size: 18px;
+        }
+        QPushButton:hover { background-color: #E9ECEF; color: #343A40; }
+        """)
+        self.info_btn.clicked.connect(self.parent.show_about_dialog)  # 메인 윈도우의 함수 호출
+        layout.addWidget(self.info_btn)
 
         # 최소화 버튼 (디자인 개선)
         btn_min = QPushButton("─")
@@ -175,7 +188,7 @@ class MainWindow(QMainWindow):
         self.csv_path_edit.setReadOnly(True)
         row.addWidget(self.csv_path_edit, stretch=1)
 
-        self.btn_csv = QPushButton("파일 불러오기")
+        self.btn_csv = QPushButton("CSV 파일 불러오기")
         self.btn_csv.clicked.connect(self._select_csv)
         row.addWidget(self.btn_csv)
 
@@ -198,7 +211,7 @@ class MainWindow(QMainWindow):
 
         # 테이블 전용 툴바 (추가/비우기 버튼)
         tool_bar = QHBoxLayout()
-        tool_bar.addWidget(QLabel("검사 대상 목록"))
+        tool_bar.addWidget(QLabel("검사 대상 파일(*.pdf, *.xlsx)을 드래그해서 추가하세요"))
         tool_bar.addStretch()
 
         self.btn_add = QPushButton("➕ 파일 추가")
@@ -681,3 +694,45 @@ class MainWindow(QMainWindow):
         paths = [url.toLocalFile() for url in urls]
         self.handle_dropped_files(paths)
         event.acceptProposedAction()
+
+    def show_about_dialog(self):
+        """제작자 정보를 보여주는 팝업창 (여백 및 스타일 강화)"""
+        about_text = (
+            "<div style='margin: 10px;'>"  # 전체적인 바깥 여백
+            "<h2 style='color: #2C3E50;'>학교생활기록부 일괄 점검 프로그램</h2>"
+            "<hr>"
+            "<p style='line-height: 150%;'>"
+            "<b>버전:</b> v2026.03.16<br>"
+            "<b>제작자:</b> 운양고등학교 이종환T<br>"
+            "<b>GitHub:</b> <a href='https://github.com/itmir913' style='color: #3498DB;'>방문하기</a>"
+            "</p>"
+            "<br>"
+            "<p style='color: #7F8C8D;'><small>Copyright 2026. All rights reserved.</small></p>"
+            "</div>"
+        )
+
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("프로그램 정보")
+        msg_box.setText(about_text)
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+
+        # 💡 스타일시트로 최소 너비와 내부 여백 지정
+        msg_box.setStyleSheet("""
+            QMessageBox {
+                background-color: white;
+            }
+            QLabel {
+                min-width: 400px;  /* 창의 최소 너비 설정 */
+                padding: 20px;     /* 텍스트 주변 여백 추가 */
+            }
+            QPushButton {
+                min-width: 80px;
+                padding: 5px;
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        """)
+
+        # 하이퍼링크 활성화
+        msg_box.setTextFormat(Qt.TextFormat.RichText)
+        msg_box.exec()
