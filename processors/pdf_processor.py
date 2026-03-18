@@ -53,7 +53,7 @@ def process_pdf(input_path: str, keywords: Set[str]) -> Dict:
                 # 💡 검색 플래그 설정
                 # TEXT_PRESERVE_WHITESPACE: 공백 유지로 검색 정확도 향상
                 # TEXT_DEHYPHENATE: 줄바꿈 시 하이픈으로 잘린 단어 결합 처리
-                search_flags = fitz.TEXT_PRESERVE_WHITESPACE | fitz.TEXT_DEHYPHENATE
+                search_flags = fitz.TEXT_PRESERVE_WHITESPACE | fitz.TEXT_DEHYPHENATE | fitz.TEXT_IGNORE_CASE
 
                 # 💡 quad=True: 사각형(Rect) 대신 사동형(Quad) 좌표를 반환받음
                 quads = page.search_for(keyword, flags=search_flags, quads=True)
