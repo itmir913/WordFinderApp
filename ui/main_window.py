@@ -45,7 +45,7 @@ class CustomTitleBar(QWidget):
         layout.setSpacing(0)
 
         # 타이틀 텍스트
-        title = QLabel("🔍 학교생활기록부 일괄 점검 프로그램 v2026.03.16")
+        title = QLabel("🔍 학교생활기록부 일괄 점검 프로그램 v2026.03.18")
         title.setStyleSheet(
             "color: #343A40; font-size: 16px; font-weight: bold; font-family: 'Malgun Gothic';")
         layout.addWidget(title)
@@ -698,7 +698,7 @@ class MainWindow(QMainWindow):
     def show_about_dialog(self):
         """제작자 정보를 보여주는 팝업창 (여백 및 스타일 강화)"""
         about_text = (
-            "<div style='margin: 10px;'>"  # 전체적인 바깥 여백
+            "<div style='margin: 10px;'>"
             "<h2 style='color: #2C3E50;'>학교생활기록부 일괄 점검 프로그램</h2>"
             "<hr>"
             "<p style='line-height: 150%;'>"
@@ -707,7 +707,13 @@ class MainWindow(QMainWindow):
             "<b>GitHub:</b> <a href='https://github.com/itmir913' style='color: #3498DB;'>방문하기</a>"
             "</p>"
             "<br>"
-            "<p style='color: #7F8C8D;'><small>Copyright 2026. All rights reserved.</small></p>"
+            "<p style='line-height: 150%;'>"
+            "본 프로그램은 <b>GNU LESSER GENERAL PUBLIC LICENSE Version 3 (LGPLv3)</b> 하에 배포됩니다.<br>"
+            "누구나 자유롭게 사용, 복제 및 배포할 수 있으며,<br>"
+            "수정하여 배포할 경우 해당 수정 사항의 소스코드는 LGPLv3에 따라 공개해야 합니다."
+            "</p>"
+            "<br>"
+            "<p style='color: #7F8C8D;'><small>Copyright 2026. Licensed under LGPLv3.</small></p>"
             "</div>"
         )
 

@@ -42,4 +42,15 @@
 
 ---
 
+## 📦 실행 파일 빌드 방법 (PyInstaller)
+
+아래 명령어를 사용하면 Python 스크립트를 실행 파일로 패키징할 수 있습니다.
+
+```bash
+pip install pyinstaller   
+pyinstaller --onedir --windowed --clean --name "WordFinderApp" main.py
+```
+
+---
+
 **Copyright 2026. All rights reserved.**
