@@ -731,12 +731,16 @@ class MainWindow(QMainWindow):
         if len(csv_paths) == 1:
             self._load_csv(csv_paths[0])
         elif len(csv_paths) > 1:
-            self._log("⚠️ 여러 개의 CSV가 감지되었습니다. 기준 파일은 하나씩만 등록 가능합니다.")
+            self._log("⚠️ 여러 개의 CSV가 감지되었습니다. 단어 CSV 파일은 하나씩만 등록 가능합니다.")
             QMessageBox.information(self, "알림", "CSV 파일은 한 번에 하나만 등록할 수 있습니다.")
 
         # 2. PDF/Excel 처리: 목록에 추가
         if target_paths:
             self.add_files(target_paths)
+
+        # 💡 드래그 앤 드롭 완료 후 원하는 탭으로 포커스 이동
+        # 0: 사용 방법, 1: 검색 대상 파일, 2: 시스템 로그
+        self.tabs.setCurrentIndex(1)  # 👈 원하시는 탭 번호로 변경하세요! (2번째 탭을 원하시면 1 입력)
 
     # 윈도우 빈 공간에 드롭했을 때 처리
     def dropEvent(self, event: QDropEvent):
