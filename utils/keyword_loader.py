@@ -20,6 +20,10 @@ def load_keywords(filepath: str) -> Set[str]:
         try:
             with open(path, newline="", encoding=encoding) as f:
                 reader = csv.reader(f)
+
+                # 첫 번째 줄(헤더) 건너뛰기
+                next(reader, None)
+
                 for row in reader:
                     if row:
                         word = row[0].strip()
