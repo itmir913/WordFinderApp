@@ -348,49 +348,65 @@ class MainWindow(QMainWindow):
 
         # 안내 가이드 HTML 작성
         html_content = f"""
-        <div style="font-family: 'Malgun Gothic', sans-serif; font-size: 16px; color: #343A40; line-height: 1.6;">
-            <h2 style="font-size: 24px; color: #2C3E50; border-bottom: 2px solid #E9ECEF; padding-bottom: 5px;">
+        <div style="font-family: 'Malgun Gothic', sans-serif; font-size: 16px; color: #343A40; line-height: 1.6; padding: 15px 20px;">
+            <h2 style="font-size: 24px; color: #2C3E50; border-bottom: 2px solid #E9ECEF; padding-bottom: 8px;">
                 🔍 학교생활기록부 일괄 점검 프로그램 사용 방법
             </h2>
-            <p>이 프로그램은 <b>PDF</b> 및 <b>Excel(.xlsx)</b> 파일 내에 특정 단어(CSV)가 포함되어 있는지 일괄로 검사하는 도구입니다.</p>
+            <p style="margin-left: 5px;">이 프로그램은 <b>PDF</b> 및 <b>Excel(.xlsx)</b> 파일 내에 특정 단어(CSV)가 포함되어 있는지 일괄로 검사하는 도구입니다.</p>
             
-            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 20px;">📌 Step 1. 검색 기준 설정</h3>
-            <ul style="margin-top: 0;">
-                <li>검색할 단어들이 나열된 <b>CSV 파일</b>을 준비합니다.</li>
-                <li>[CSV 파일 불러오기] 버튼을 누르거나 화면에 CSV 파일을 <b>드래그 앤 드롭</b>하여 등록하세요.</li>
-                <li>CSV 파일은 첫 번째 열(Column)에 검색할 단어들이 입력되어 있어야 합니다.</li>
-            </ul>
-
-            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 20px;">📌 Step 2. 검색 대상 파일 추가</h3>
-            <ul style="margin-top: 0;">
-                <li>[📁 검색 대상 파일] 탭에서 점검할 <b>학생부 PDF</b> 또는 <b>Excel 파일</b>을 추가합니다.</li>
-                <li>[➕ 파일 추가] 버튼을 이용하거나, 리스트 영역으로 파일을 <b>드래그 앤 드롭</b>하여 여러 개를 한 번에 추가할 수 있습니다.</li>
-            </ul>
-
-            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 20px;">📌 Step 3. 처리 시작 및 확인</h3>
-            <ul style="margin-top: 0;">
-                <li>파일이 모두 준비되면 우측 하단의 <b style="color:#20C997;">[▶ 처리 시작]</b> 버튼을 클릭합니다.</li>
-                <li>진행 상황과 상세 결과는 <b>[📜 시스템 로그]</b> 탭에서 실시간으로 확인할 수 있습니다.</li>
-                <li>처리 중에는 <b style="color:#FA5252;">[⛔ 중지]</b> 버튼을 눌러 작업을 강제로 중단할 수 있습니다.</li>
-            </ul>
-
-            <div style="background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 10px; margin-top: 25px;">
+            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 30px;">📌 Step 1. 검색 기준 설정</h3>
+            <div style="padding-left: 15px;">
+                <ul style="margin-top: 5px;">
+                    <li>검색할 단어들이 나열된 <b>CSV 파일</b>을 준비합니다.</li>
+                    <li>[CSV 파일 불러오기] 버튼을 누르거나 화면에 CSV 파일을 <b>드래그 앤 드롭</b>하여 등록하세요.</li>
+                    <li>CSV 파일은 첫 번째 열(Column)에 검색할 단어들이 입력되어 있어야 합니다.</li>
+                </ul>
+            </div>
+        
+            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 30px;">📌 Step 2. 검색 대상 파일 추가</h3>
+            <div style="padding-left: 15px;">
+                <ul style="margin-top: 5px; margin-bottom: 15px;">
+                    <li>[📁 검색 대상 파일] 탭에서 점검할 <b>학생부 PDF</b> 또는 <b>Excel 파일</b>을 추가합니다.</li>
+                    <li>[➕ 파일 추가] 버튼을 이용하거나, 리스트 영역으로 파일을 <b>드래그 앤 드롭</b>하여 여러 개를 한 번에 추가할 수 있습니다.</li>
+                </ul>
+                
+                <div style="background-color: #F1F8FF; border: 1px solid #D0E2F5; border-radius: 8px; padding: 18px; margin-left: 40px; margin-right: 25px; font-size: 15px;">
+                    <b style="color: #0056B3; font-size: 16px;">📥 나이스(NEIS)에서 파일 준비하기</b>
+                    <ul style="margin-top: 12px; margin-bottom: 0; padding-left: 20px; color: #343A40;">
+                        <li style="margin-bottom: 8px;"><b>Excel:</b> 나이스(NEIS) ▷ 학급담임 ▷ 학생부 ▷ 학교생활기록부 ▷ 학생부 항목별 조회 ▷ [저장] 버튼 ▷ <b>XLS data</b></li>
+                        <li><b>PDF:</b> 인쇄 ▷ 프린터 선택 ▷ PDF로 저장. 텍스트를 검색할 수 있는 원본 파일만 가능합니다. <b>(※ 이미지 형태의 스캔본 불가능)</b></li>
+                    </ul>
+                </div>
+            </div>
+        
+            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 30px;">📌 Step 3. 처리 시작 및 확인</h3>
+            <div style="padding-left: 15px;">
+                <ul style="margin-top: 5px;">
+                    <li>파일이 모두 준비되면 우측 하단의 <b style="color:#20C997;">[▶ 처리 시작]</b> 버튼을 클릭합니다.</li>
+                    <li>진행 상황과 상세 결과는 <b>[📜 시스템 로그]</b> 탭에서 실시간으로 확인할 수 있습니다.</li>
+                    <li>처리 중에는 <b style="color:#FA5252;">[⛔ 중지]</b> 버튼을 눌러 작업을 강제로 중단할 수 있습니다.</li>
+                </ul>
+            </div>
+        
+            <div style="background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 15px; margin-top: 35px; margin-left: 25px; margin-right: 25px;">
                 <b>💡 팁:</b> 리스트에 추가된 파일을 삭제하려면 해당 파일 우측의 ✖ 버튼을 누르거나, [🗑 전체 비우기]를 통해 목록을 초기화할 수 있습니다.
             </div>
-
-            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 35px; border-top: 2px solid #E9ECEF; padding-top: 20px;">
-                ℹ️ 프로그램 정보
-            </h3>
-            <p style="margin-top: 10px;">
-                <b>버전:</b> {VERSION}<br>
-                <b>제작자:</b> 운양고등학교 이종환T<br>
-                <b>GitHub:</b> <a href='https://github.com/itmir913/WordFinderApp/releases' style='color: #3498DB; text-decoration: none;'>방문하기</a>
-            </p>
-            
-            <div style="background-color: #F8F9FA; border: 1px solid #DEE2E6; border-radius: 6px; padding: 15px; margin-top: 15px; color: #495057; font-size: 15px;">
-                본 프로그램은 <b>LGPLv3</b> 라이선스를 따릅니다.<br>
-                누구나 자유롭게 사용, 복제, 배포할 수 있습니다.<br>
-                수정 후 배포 시, 수정된 소스코드는 LGPLv3에 따라 공개해야 합니다.
+        
+            <div style="border: 1px solid #DEE2E6; border-radius: 8px; padding: 20px; margin-top: 40px; margin-left: 20px; margin-right: 20px;">
+                <h3 style="font-size: 20px; color: #4DABF7; margin-top: 0; margin-bottom: 15px;">
+                    ℹ️ 프로그램 정보
+                </h3>
+                <p style="margin-top: 0; margin-bottom: 15px; padding-left: 5px;">
+                    <b>버전:</b> {VERSION}<br>
+                    <b>제작자:</b> 운양고등학교 이종환T<br>
+                    <b>GitHub:</b> <a href='https://github.com/itmir913/WordFinderApp/releases' style='color: #3498DB; text-decoration: none;'>방문하기</a>
+                </p>
+                
+                <div style="background-color: #F8F9FA; border-radius: 6px; padding: 15px; margin-bottom: 0; color: #495057; font-size: 14px;">
+                    본 프로그램은 <b>LGPLv3</b> 라이선스를 따릅니다.<br>
+                    누구나 자유롭게 사용, 복제, 배포할 수 있습니다.<br>
+                    수정 후 배포 시, 수정된 소스코드는 LGPLv3에 따라 공개해야 합니다.
+                </div>
             </div>
         </div>
         """
