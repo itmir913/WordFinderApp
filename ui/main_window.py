@@ -29,6 +29,8 @@ STATUS_COLORS = {
     "실패": "#F8D7DA",
 }
 
+VERSION = 'v2026.03.19'
+
 
 # ──────────────────────────────────────────────
 # 커스텀 타이틀 바 (개선된 디자인)
@@ -45,7 +47,7 @@ class CustomTitleBar(QWidget):
         layout.setSpacing(0)
 
         # 타이틀 텍스트
-        title = QLabel("🔍 학교생활기록부 일괄 점검 프로그램 v2026.03.18")
+        title = QLabel(f"🔍 학교생활기록부 일괄 점검 프로그램 {VERSION}")
         title.setStyleSheet(
             "color: #343A40; font-size: 16px; font-weight: bold; font-family: 'Malgun Gothic';")
         layout.addWidget(title)
@@ -341,38 +343,53 @@ class MainWindow(QMainWindow):
         browser.setStyleSheet("border: none; background-color: #FFFFFF; padding: 15px;")
 
         # 안내 가이드 HTML 작성
-        html_content = """
-            <div style="font-family: 'Malgun Gothic', sans-serif; color: #343A40; line-height: 1.6;">
-                <h2 style="color: #2C3E50; border-bottom: 2px solid #E9ECEF; padding-bottom: 5px;">
-                    🔍 학교생활기록부 일괄 점검 프로그램 사용 방법
-                </h2>
-                <p>이 프로그램은 <b>PDF</b> 및 <b>Excel(.xlsx)</b> 파일 내에 특정 단어(CSV)가 포함되어 있는지 일괄로 검사하는 도구입니다.</p>
-                
-                <h3 style="color: #4DABF7; margin-top: 20px;">📌 Step 1. 검색 기준 설정</h3>
-                <ul style="margin-top: 0;">
-                    <li>검색할 단어들이 나열된 <b>CSV 파일</b>을 준비합니다.</li>
-                    <li>[CSV 파일 불러오기] 버튼을 누르거나 화면에 CSV 파일을 <b>드래그 앤 드롭</b>하여 등록하세요.</li>
-                    <li>CSV 파일은 첫 번째 열(Column)에 검색할 단어들이 입력되어 있어야 합니다.</li>
-                </ul>
-    
-                <h3 style="color: #4DABF7; margin-top: 20px;">📌 Step 2. 검색 대상 파일 추가</h3>
-                <ul style="margin-top: 0;">
-                    <li>[📁 검색 대상 파일] 탭에서 점검할 <b>학생부 PDF</b> 또는 <b>Excel 파일</b>을 추가합니다.</li>
-                    <li>[➕ 파일 추가] 버튼을 이용하거나, 리스트 영역으로 파일을 <b>드래그 앤 드롭</b>하여 여러 개를 한 번에 추가할 수 있습니다.</li>
-                </ul>
-    
-                <h3 style="color: #4DABF7; margin-top: 20px;">📌 Step 3. 처리 시작 및 확인</h3>
-                <ul style="margin-top: 0;">
-                    <li>파일이 모두 준비되면 우측 하단의 <b style="color:#20C997;">[▶ 처리 시작]</b> 버튼을 클릭합니다.</li>
-                    <li>진행 상황과 상세 결과는 <b>[📜 시스템 로그]</b> 탭에서 실시간으로 확인할 수 있습니다.</li>
-                    <li>처리 중에는 <b style="color:#FA5252;">[⛔ 중지]</b> 버튼을 눌러 작업을 강제로 중단할 수 있습니다.</li>
-                </ul>
-    
-                <div style="background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 10px; margin-top: 25px;">
-                    <b>💡 팁:</b> 리스트에 추가된 파일을 삭제하려면 해당 파일 우측의 ✖ 버튼을 누르거나, [🗑 전체 비우기]를 통해 목록을 초기화할 수 있습니다.
-                </div>
+        html_content = f"""
+        <div style="font-family: 'Malgun Gothic', sans-serif; font-size: 16px; color: #343A40; line-height: 1.6;">
+            <h2 style="font-size: 24px; color: #2C3E50; border-bottom: 2px solid #E9ECEF; padding-bottom: 5px;">
+                🔍 학교생활기록부 일괄 점검 프로그램 사용 방법
+            </h2>
+            <p>이 프로그램은 <b>PDF</b> 및 <b>Excel(.xlsx)</b> 파일 내에 특정 단어(CSV)가 포함되어 있는지 일괄로 검사하는 도구입니다.</p>
+            
+            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 20px;">📌 Step 1. 검색 기준 설정</h3>
+            <ul style="margin-top: 0;">
+                <li>검색할 단어들이 나열된 <b>CSV 파일</b>을 준비합니다.</li>
+                <li>[CSV 파일 불러오기] 버튼을 누르거나 화면에 CSV 파일을 <b>드래그 앤 드롭</b>하여 등록하세요.</li>
+                <li>CSV 파일은 첫 번째 열(Column)에 검색할 단어들이 입력되어 있어야 합니다.</li>
+            </ul>
+
+            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 20px;">📌 Step 2. 검색 대상 파일 추가</h3>
+            <ul style="margin-top: 0;">
+                <li>[📁 검색 대상 파일] 탭에서 점검할 <b>학생부 PDF</b> 또는 <b>Excel 파일</b>을 추가합니다.</li>
+                <li>[➕ 파일 추가] 버튼을 이용하거나, 리스트 영역으로 파일을 <b>드래그 앤 드롭</b>하여 여러 개를 한 번에 추가할 수 있습니다.</li>
+            </ul>
+
+            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 20px;">📌 Step 3. 처리 시작 및 확인</h3>
+            <ul style="margin-top: 0;">
+                <li>파일이 모두 준비되면 우측 하단의 <b style="color:#20C997;">[▶ 처리 시작]</b> 버튼을 클릭합니다.</li>
+                <li>진행 상황과 상세 결과는 <b>[📜 시스템 로그]</b> 탭에서 실시간으로 확인할 수 있습니다.</li>
+                <li>처리 중에는 <b style="color:#FA5252;">[⛔ 중지]</b> 버튼을 눌러 작업을 강제로 중단할 수 있습니다.</li>
+            </ul>
+
+            <div style="background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 10px; margin-top: 25px;">
+                <b>💡 팁:</b> 리스트에 추가된 파일을 삭제하려면 해당 파일 우측의 ✖ 버튼을 누르거나, [🗑 전체 비우기]를 통해 목록을 초기화할 수 있습니다.
             </div>
-            """
+
+            <h3 style="font-size: 20px; color: #4DABF7; margin-top: 35px; border-top: 2px solid #E9ECEF; padding-top: 20px;">
+                ℹ️ 프로그램 정보
+            </h3>
+            <p style="margin-top: 10px;">
+                <b>버전:</b> {VERSION}<br>
+                <b>제작자:</b> 운양고등학교 이종환T<br>
+                <b>GitHub:</b> <a href='https://github.com/itmir913/WordFinderApp/releases' style='color: #3498DB; text-decoration: none;'>방문하기</a>
+            </p>
+            
+            <div style="background-color: #F8F9FA; border: 1px solid #DEE2E6; border-radius: 6px; padding: 15px; margin-top: 15px; color: #495057; font-size: 15px;">
+                본 프로그램은 <b>LGPLv3</b> 라이선스를 따릅니다.<br>
+                누구나 자유롭게 사용, 복제, 배포할 수 있습니다.<br>
+                수정 후 배포 시, 수정된 소스코드는 LGPLv3에 따라 공개해야 합니다.
+            </div>
+        </div>
+        """
 
         browser.setHtml(html_content)
         layout.addWidget(browser)
@@ -756,9 +773,9 @@ class MainWindow(QMainWindow):
             "<h2 style='color: #2C3E50;'>학교생활기록부 일괄 점검 프로그램</h2>"
             "<hr>"
             "<p style='line-height: 150%;'>"
-            "<b>버전:</b> v2026.03.18<br>"
+            f"<b>버전:</b> {VERSION}<br>"
             "<b>제작자:</b> 운양고등학교 이종환T<br>"
-            "<b>GitHub:</b> <a href='https://github.com/itmir913' style='color: #3498DB;'>방문하기</a>"
+            "<b>GitHub:</b> <a href='https://github.com/itmir913/WordFinderApp/releases' style='color: #3498DB;'>방문하기</a>"
             "</p>"
             "<br>"
             "<p style='line-height: 160%;'>"
