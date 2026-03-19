@@ -1,4 +1,5 @@
 import csv
+import sys
 from pathlib import Path
 from typing import Set
 
@@ -29,3 +30,15 @@ def load_keywords(filepath: str) -> Set[str]:
             continue
 
     raise ValueError(f"인코딩을 감지할 수 없습니다: {filepath}")
+
+
+def get_resource_path(relative_path: str) -> Path:
+    """ PyInstaller 환경과 일반 환경 모두에서 파일의 절대 경로를 반환 (pathlib 사용) """
+    try:
+        # PyInstaller 런타임 환경
+        base_path = Path(sys._MEIPASS)
+    except AttributeError:
+        # 일반 파이썬 실행 환경 (현재 작업 폴더 기준)
+        base_path = Path.cwd()
+
+    return base_path / relative_path

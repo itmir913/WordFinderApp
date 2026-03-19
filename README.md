@@ -48,7 +48,11 @@
 
 ```bash
 pip install pyinstaller   
-pyinstaller --onedir --windowed --clean --name "WordFinderApp" main.py
+pyinstaller --onedir --windowed --clean --name "WordFinderApp" --add-data "default.csv;." main.py
+```
+
+```bash
+pyinstaller --clean WordFinderApp.spec
 ```
 
 ---

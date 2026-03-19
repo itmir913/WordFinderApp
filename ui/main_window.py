@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
     QMessageBox, QAbstractItemView, QTabWidget, QApplication, QTextBrowser
 )
 
-from utils.keyword_loader import load_keywords
+from utils.keyword_loader import load_keywords, get_resource_path
 from workers.processor import ProcessorThread
 
 # 칼럼 인덱스 변경
@@ -146,6 +146,10 @@ class MainWindow(QMainWindow):
 
         self._init_ui()
         self._apply_styles()
+
+        path = get_resource_path("default.csv")
+        if path.exists():
+            self._load_csv(str(path))  # 문자열로 변환하여 전달
 
     def _init_ui(self):
         central = QWidget()
