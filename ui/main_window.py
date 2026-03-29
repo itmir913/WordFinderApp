@@ -29,7 +29,7 @@ STATUS_COLORS = {
     "실패": "#F8D7DA",
 }
 
-VERSION = 'v2026.03.19'
+VERSION = 'v2026.03.29'
 
 
 # ──────────────────────────────────────────────
@@ -176,6 +176,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self._build_guide_page(), "📖 사용 방법")
         self.tabs.addTab(self._build_file_management_page(), "📁 검색 대상 파일")
         self.tabs.addTab(self._build_log_panel(), "📜 시스템 로그")
+        self.tabs.addTab(self._build_download_page(), "⬇️ 최신버전 다운로드")
         content_layout.addWidget(self.tabs, stretch=1)
 
         # ── Step 3: 실행 액션 ──
@@ -410,6 +411,56 @@ class MainWindow(QMainWindow):
             </div>
         </div>
         """
+
+        browser.setHtml(html_content)
+        layout.addWidget(browser)
+
+        return widget
+
+    def _build_download_page(self) -> QWidget:
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        # QTextBrowser를 이용해 안내 페이지와 동일한 스타일의 레이아웃 구성
+        browser = QTextBrowser()
+        browser.setOpenExternalLinks(True)  # 외부 링크 클릭 허용
+        browser.setStyleSheet("border: none; background-color: #FFFFFF; padding: 15px;")
+
+        # HTML 구성 (현재 버전 표시 및 GitHub Latest Release 링크 제공)
+        html_content = f"""
+            <div style="font-family: 'Malgun Gothic', sans-serif; font-size: 16px; color: #343A40; line-height: 1.6; padding: 15px 20px;">
+                <h2 style="font-size: 24px; color: #2C3E50; border-bottom: 2px solid #E9ECEF; padding-bottom: 8px;">
+                    ⬇️ 최신 버전 다운로드 및 업데이트
+                </h2>
+                <p style="margin-top: 20px; font-size: 16px;">
+                    현재 실행 중인 버전: <b style="color: #4DABF7;">{VERSION}</b>
+                </p>
+                <p>
+                    기능 개선 및 버그가 수정된 최신 버전은 Github Release 페이지에서 다운로드 가능합니다.
+                </p>
+                
+                <div style="background-color: #F8F9FA; border: 1px solid #DEE2E6; border-radius: 8px; padding: 30px; margin-top: 30px; text-align: center;">
+                    <h3 style="margin-top: 0; color: #343A40; font-size: 20px;">최신 버전 프로그램 다운로드하기</h3>
+                    <p style="color: #6C757D; font-size: 14px; margin-bottom: 25px;">
+                        아래 버튼을 클릭하면 GitHub에서 가장 최신 배포 파일을 다운로드합니다.
+                    </p>
+                    
+                    <a href="https://github.com/itmir913/WordFinderApp/releases/latest/download/WordFinderApp.zip" 
+                       style="display: inline-block; background-color: #20C997; color: white; text-decoration: none; padding: 16px 45px; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                       📥 최신 버전 프로그램 다운로드하기
+                    </a>
+                </div>
+                
+                <div style="background-color: #E7F1FF; border-left: 4px solid #4DABF7; padding: 15px; margin-top: 30px; margin-left: 10px; margin-right: 10px;">
+                    <b style="color: #0056B3; font-size: 16px;">💡 업데이트 방법</b>
+                    <ul style="margin-top: 10px; margin-bottom: 0; color: #343A40;">
+                        <li style="margin-bottom: 8px;">위 <b>다운로드 버튼</b>을 클릭하여 최신 버전의 압축 파일(ZIP)을 다운로드합니다.</li>
+                        <li>기존에 사용하시던 프로그램을 삭제하시고 새로 다운로드받은 파일을 압축 해제하여 새 버전을 사용하시면 됩니다.</li>
+                    </ul>
+                </div>
+            </div>
+            """
 
         browser.setHtml(html_content)
         layout.addWidget(browser)
