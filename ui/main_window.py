@@ -29,7 +29,7 @@ STATUS_COLORS = {
     "실패": "#F8D7DA",
 }
 
-VERSION = 'v2026.03.29'
+VERSION = 'v2026.04.01'
 
 
 # ──────────────────────────────────────────────
@@ -353,7 +353,7 @@ class MainWindow(QMainWindow):
             <h2 style="font-size: 24px; color: #2C3E50; border-bottom: 2px solid #E9ECEF; padding-bottom: 8px;">
                 🔍 학교생활기록부 일괄 점검 프로그램 사용 방법
             </h2>
-            <p style="margin-left: 5px;">이 프로그램은 <b>PDF</b> 및 <b>Excel(.xlsx)</b> 파일 내에 특정 단어(CSV)가 포함되어 있는지 일괄로 검사하는 도구입니다.</p>
+            <p style="margin-left: 5px;">이 프로그램은 <b>PDF</b> 및 <b>Excel(.xlsx)</b> 파일 내에 특정 단어(CSV)가 포함되어 있는지 일괄로 검사하는 도구입니다. 모든 처리는 로컬에서만 이루어지며 데이터가 외부로 전송되지 않습니다.</p>
             
             <h3 style="font-size: 20px; color: #4DABF7; margin-top: 30px;">📌 Step 1. 검색 기준 설정</h3>
             <div style="padding-left: 15px;">
