@@ -29,7 +29,7 @@ STATUS_COLORS = {
     "실패": "#F8D7DA",
 }
 
-VERSION = 'v2026.04.01'
+VERSION = 'v2026.04.26-0315'
 
 
 # ──────────────────────────────────────────────
@@ -404,9 +404,9 @@ class MainWindow(QMainWindow):
                 </p>
                 
                 <div style="background-color: #F8F9FA; border-radius: 6px; padding: 15px; margin-bottom: 0; color: #495057; font-size: 14px;">
-                    본 프로그램은 <b>LGPLv3</b> 라이선스를 따릅니다.<br>
-                    누구나 자유롭게 사용, 복제, 배포할 수 있습니다.<br>
-                    수정 후 배포 시, 수정된 소스코드는 LGPLv3에 따라 공개해야 합니다.
+                    본 프로그램은 <b>PolyForm Noncommercial License 1.0.0</b>을 따릅니다.<br>
+                    개인 및 학교 등 교육 현장에서 자유롭게 사용하실 수 있습니다.<br>
+                    <b style="color: #d9534f;">※ 상업적 이용, 유료 판매 및 이를 활용한 모든 영리 활동은 엄격히 금지됩니다.</b>
                 </div>
             </div>
         </div>
@@ -849,16 +849,6 @@ class MainWindow(QMainWindow):
             "<b>GitHub:</b> <a href='https://github.com/itmir913/WordFinderApp/releases' style='color: #3498DB;'>방문하기</a>"
             "</p>"
             "<br>"
-            "<p style='line-height: 160%;'>"
-            "본 프로그램은 <b>LGPLv3</b> 라이선스를 따릅니다.<br>"
-            "누구나 자유롭게 사용, 복제, 배포할 수 있습니다.<br>"
-            "수정 후 배포 시, 수정된 소스코드는<br>"
-            "LGPLv3에 따라 공개해야 합니다."
-            "</p>"
-            "<br>"
-            "<p style='color: #7F8C8D;'><small>"
-            "Copyright 2026. Licensed under LGPLv3."
-            "</small></p>"
             "</div>"
         )
 
