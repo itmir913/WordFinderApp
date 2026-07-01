@@ -1,7 +1,74 @@
-# Tauri + Vue 3
+# 🔍 학교생활기록부 일괄 점검 프로그램
 
-This template should help get you started developing with Tauri + Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+본 프로그램은 교사가 학교생활기록부를 효율적으로 점검할 수 있도록 돕는 도구입니다. **PDF와 Excel(.xlsx)** 파일을 지원하며, 발견된 단어를 자동으로 강조하고 북마크를 생성합니다.
 
-## Recommended IDE Setup
+---
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## 🚀 사용자 가이드 (선생님용)
+
+### 📌 Step 1. 검색 기준 설정
+* 검색할 단어들이 나열된 **CSV 파일**을 준비합니다. (첫 번째 열에 검색할 단어들이 입력되어 있어야 합니다.)
+* 프로그램 상단의 **[CSV 파일 불러오기]** 버튼을 누르거나, 화면에 CSV 파일을 **드래그 앤 드롭**하여 등록하세요.
+* CSV 파일을 별도로 등록하지 않아도, 실행 파일과 같은 폴더의 **`default.csv`** 또는 프로그램에 내장된 기본 단어 목록이 자동으로 적용됩니다.
+
+### 📌 Step 2. 검색 대상 파일 추가
+* **[📁 검색 대상 파일]** 탭에서 점검할 **학생부 PDF** 또는 **Excel 파일**을 추가합니다.
+* **[➕ 파일 추가]** 버튼을 이용하거나, 리스트 영역으로 파일을 **드래그 앤 드롭**하여 여러 개를 한 번에 추가할 수 있습니다.
+
+> **📥 나이스(NEIS)에서 파일 준비하기**
+> * **Excel:** 나이스(NEIS) ▷ 학급담임 ▷ 학생부 ▷ 학교생활기록부 ▷ 학생부 항목별 조회 ▷ [저장] 버튼 ▷ **XLS data**
+> * **PDF:** 인쇄 ▷ 프린터 선택 ▷ PDF로 저장. 텍스트를 검색할 수 있는 원본 파일만 가능합니다. **(※ 이미지 형태의 스캔본 불가능)**
+
+### 📌 Step 3. 처리 시작 및 확인
+* 파일이 모두 준비되면 우측 하단의 **`▶ 처리 시작`** 버튼을 클릭합니다.
+* 진행 상황과 상세 결과(성공/실패 등)는 **[📜 시스템 로그]** 탭에서 실시간으로 확인할 수 있습니다.
+* 처리 중에는 **`⛔ 중지`** 버튼을 눌러 작업을 강제로 중단할 수 있습니다.
+
+> **💡 팁:** 리스트에 추가된 파일을 삭제하려면 해당 파일 우측의 `✖` 버튼을 누르거나, **[🗑 전체 비우기]**를 통해 목록을 초기화할 수 있습니다.
+
+### 📌 Step 4. 결과 파일 활용법
+* 점검이 완료되면 원본 파일과 같은 폴더에 **`output_`**이 붙은 결과 파일이 생성됩니다.
+* **PDF:** 단어에 **노란색 하이라이트**가 칠해지며, 왼쪽 **북마크(목차)** 메뉴를 통해 발견 위치로 즉시 이동할 수 있습니다.
+* **Excel:** 가장 오른쪽에 '발견여부'와 '발견된 단어' 컬럼이 추가되며, 해당 행 전체가 **노란색**으로 강조됩니다.
+
+---
+
+## ℹ️ 프로그램 정보
+
+* **제작자:** 운양고등학교 이종환T
+* **공식 홈페이지:** [luminousky.com](https://luminousky.com/teacher-utility-kit/neis-wordfinder/)
+* **문의:** [hello@luminousky.com](mailto:hello@luminousky.com)
+
+---
+
+## 🛠️ 개발 및 기술 정보
+
+### 📌 기술 스택
+* **UI/프레임워크:** `Tauri 2` + `Vue 3` (Composition API) + `Tailwind CSS v4`
+* **PDF 처리:** `pdfjs-dist` (텍스트 위치 추출) + `pdf-lib` (하이라이트·북마크 생성)
+* **Excel 처리:** `SheetJS` (읽기) + `ExcelJS` (쓰기·노란색 행 강조)
+* **상태 관리:** `Pinia`
+* **무거운 처리:** Web Worker (`processor.worker.js`)
+
+---
+
+## ⚖️ 라이선스 (License)
+
+본 프로그램은 배포 버전에 따라 적용되는 라이선스가 다릅니다.
+
+### 1. 버전별 라이선스 이력
+* **초기 릴리즈 ~ ver.2026.04.01-1450**: LGPLv3
+* **ver.2026.04.26-0315 ~ 현재**: PolyForm Noncommercial License 1.0.0
+
+### 2. 현재 적용 라이선스
+본 프로그램의 최신 버전은 **PolyForm Noncommercial License 1.0.0**을 따릅니다.
+
+* **허용**: 개인적인 용도, 학교 등 교육기관에서의 비영리적 목적의 사용 및 배포
+* **금지**: 본 프로그램이나 소스코드를 활용한 모든 종류의 상업적 영리 활동(판매, 유료 서비스 제공, 기업 내 이익 창출 등)은 엄격히 금지
+
+### 3. 참고 (기존 버전 사용자)
+버전 코드 'ver.2026.04.01-1450'까지의 프로그램을 사용 중이신 경우, 해당 버전은 배포 당시 명시된 **LGPLv3** 라이선스 조건을 따릅니다. 이후 릴리즈된 모든 신규 버전은 **PolyForm Noncommercial** 라이선스가 적용됩니다.
+
+---
+
+#### Copyright 2026. All rights reserved.
