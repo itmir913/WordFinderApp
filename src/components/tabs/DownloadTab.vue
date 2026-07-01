@@ -1,6 +1,18 @@
 <script setup>
+import { onMounted, computed } from 'vue';
 import { useAppStore } from '../../stores/app.js';
+
 const store = useAppStore();
+
+onMounted(() => {
+  store.fetchLatestVersion();
+});
+
+const versionStatus = computed(() => {
+  if (store.latestVersion === null) return 'loading';
+  if (store.latestVersion === '') return 'error';
+  return store.latestVersion === store.version ? 'latest' : 'outdated';
+});
 </script>
 
 <template>
@@ -12,6 +24,23 @@ const store = useAppStore();
     <p class="mt-4">
       현재 실행 중인 버전: <strong class="text-primary">{{ store.version }}</strong>
     </p>
+
+    <!-- 버전 상태 배지 -->
+    <p class="mt-2">
+      <span v-if="versionStatus === 'loading'" class="text-app-muted">
+        🔄 최신 버전 확인 중...
+      </span>
+      <span v-else-if="versionStatus === 'latest'" class="font-bold text-success">
+        ✅ 최신버전입니다.
+      </span>
+      <span v-else-if="versionStatus === 'outdated'" class="font-bold text-danger">
+        ⚠️ 최신버전이 아닙니다. (최신: {{ store.latestVersion }})
+      </span>
+      <span v-else class="text-app-muted">
+        버전 정보를 불러올 수 없습니다.
+      </span>
+    </p>
+
     <p class="text-base text-app-muted mt-1">
       기능 개선 및 버그가 수정된 최신 버전은 GitHub Release 페이지에서 다운로드 가능합니다.
     </p>
