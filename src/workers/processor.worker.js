@@ -1,6 +1,6 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import * as XLSX from 'xlsx';
-import { PDFDocument, PDFName, PDFNumber } from 'pdf-lib';
+import { PDFDocument, PDFName, PDFNumber, PDFHexString } from 'pdf-lib';
 import pdfjsWorkerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerSrc;
@@ -46,20 +46,20 @@ async function processPdf({ id, name, outputPath, data, keywords }) {
   // Step 1: pdfjs-dist로 텍스트 위치 추출
   // data.slice()로 복사 — pdfjs가 내부적으로 버퍼를 소비할 수 있으므로
   const pdf = await pdfjsLib.getDocument({ data: data.slice() }).promise;
-  const pageHighlights = [];
+  const pageHighlights = []; // { pageIndex, rects, keywords }
   let totalFound = 0;
 
   for (let p = 1; p <= pdf.numPages; p++) {
     const page = await pdf.getPage(p);
     const content = await page.getTextContent();
-    const rects = findKeywordRects(content.items, pattern);
+    const { rects, matchedKeywords } = findKeywordRectsAndKeywords(content.items, pattern);
     if (rects.length > 0) {
-      pageHighlights.push({ pageIndex: p - 1, rects });
+      pageHighlights.push({ pageIndex: p - 1, rects, keywords: matchedKeywords });
       totalFound += rects.length;
     }
   }
 
-  // Step 2: pdf-lib으로 하이라이트 어노테이션 추가
+  // Step 2: pdf-lib으로 하이라이트 + 북마크 추가
   const pdfDoc = await PDFDocument.load(data);
 
   for (const { pageIndex, rects } of pageHighlights) {
@@ -69,6 +69,12 @@ async function processPdf({ id, name, outputPath, data, keywords }) {
     }
   }
 
+  // 북마크: 페이지별·키워드별 1개 (중복 제거)
+  const outlineItems = pageHighlights.flatMap(({ pageIndex, keywords }) =>
+    [...keywords].map(kw => ({ title: `P${pageIndex + 1}: ${kw}`, pageIndex }))
+  );
+  if (outlineItems.length > 0) addOutlines(pdfDoc, outlineItems);
+
   const outBytes = await pdfDoc.save();
   const resultData = new Uint8Array(outBytes);
 
@@ -76,11 +82,11 @@ async function processPdf({ id, name, outputPath, data, keywords }) {
     { type: 'result', id, name, outputPath, data: resultData },
     [resultData.buffer]
   );
-  self.postMessage({ type: 'log', message: `✅ PDF 완료 | 탐지 ${totalFound}건 → ${outputPath}` });
+  self.postMessage({ type: 'log', message: `✅ PDF 완료 | 탐지 ${totalFound}건, 북마크 ${outlineItems.length}개 → ${outputPath}` });
 }
 
-// 텍스트 아이템 목록에서 키워드 위치를 계산해 highlight rect 배열 반환
-function findKeywordRects(items, pattern) {
+// 텍스트 아이템 목록에서 키워드 위치와 매칭된 키워드 Set을 반환
+function findKeywordRectsAndKeywords(items, pattern) {
   const segments = items
     .filter(item => item.str)
     .map(item => ({
@@ -91,11 +97,11 @@ function findKeywordRects(items, pattern) {
       fontSize: Math.abs(item.transform[3]),
     }));
 
-  if (segments.length === 0) return [];
+  if (segments.length === 0) return { rects: [], matchedKeywords: new Set() };
 
   // 전체 텍스트 문자열 + 위치 맵 구성
   let fullText = '';
-  const posMap = []; // [{segIdx, charIdx, isGap}]
+  const posMap = [];
 
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i];
@@ -110,12 +116,14 @@ function findKeywordRects(items, pattern) {
   }
 
   const rects = [];
+  const matchedKeywords = new Set();
 
   for (const match of fullText.matchAll(pattern)) {
+    matchedKeywords.add(match[0]);
+
     const start = match.index;
     const end = start + match[0].length;
 
-    // 매치 범위 내 문자를 segment 별로 그룹화
     const segGroups = new Map();
     for (let ci = start; ci < end; ci++) {
       const pos = posMap[ci];
@@ -133,7 +141,6 @@ function findKeywordRects(items, pattern) {
     for (const [segIdx, { minChar, maxChar }] of segGroups) {
       const seg = segments[segIdx];
       const charCount = seg.text.length || 1;
-      // 글자 비율로 x 범위 계산 (비례 추정)
       const xStart = seg.x + seg.width * (minChar / charCount);
       const xEnd   = seg.x + seg.width * ((maxChar + 1) / charCount);
 
@@ -146,7 +153,54 @@ function findKeywordRects(items, pattern) {
     }
   }
 
-  return rects;
+  return { rects, matchedKeywords };
+}
+
+// pdf-lib으로 PDF 북마크(Outlines) 추가
+function addOutlines(pdfDoc, items) {
+  // items: [{ title: string, pageIndex: number }]
+  const { context, catalog } = pdfDoc;
+
+  // 한글 등 유니코드 타이틀 → UTF-16 BE HexString (PDF 스펙)
+  function pdfTitle(str) {
+    const bytes = [0xFE, 0xFF];
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i);
+      bytes.push((c >> 8) & 0xFF, c & 0xFF);
+    }
+    return PDFHexString.of(bytes.map(b => b.toString(16).padStart(2, '0')).join(''));
+  }
+
+  // 각 북마크 딕셔너리 생성 (Parent는 나중에 설정)
+  const itemDicts = items.map(({ title, pageIndex }) => {
+    const pageRef = pdfDoc.getPage(pageIndex).ref;
+    return context.obj({
+      Title: pdfTitle(title),
+      Dest: context.obj([pageRef, PDFName.of('XYZ'), null, null, null]),
+    });
+  });
+
+  const itemRefs = itemDicts.map(d => context.register(d));
+
+  // 루트 Outlines 딕셔너리
+  const rootDict = context.obj({
+    Type: PDFName.of('Outlines'),
+    First: itemRefs[0],
+    Last: itemRefs[itemRefs.length - 1],
+    Count: PDFNumber.of(items.length),
+  });
+  const rootRef = context.register(rootDict);
+
+  // 각 아이템에 Parent / Prev / Next 연결
+  for (let i = 0; i < itemDicts.length; i++) {
+    itemDicts[i].set(PDFName.of('Parent'), rootRef);
+    if (i > 0) itemDicts[i].set(PDFName.of('Prev'), itemRefs[i - 1]);
+    if (i < itemDicts.length - 1) itemDicts[i].set(PDFName.of('Next'), itemRefs[i + 1]);
+  }
+
+  // 카탈로그에 등록 + 북마크 패널 자동 열기
+  catalog.set(PDFName.of('Outlines'), rootRef);
+  catalog.set(PDFName.of('PageMode'), PDFName.of('UseOutlines'));
 }
 
 // pdf-lib으로 Highlight 어노테이션 추가
