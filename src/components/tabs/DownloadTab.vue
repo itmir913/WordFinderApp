@@ -89,7 +89,7 @@ const versionStatus = computed(() => {
 
       <button
         class="w-full bg-success hover:bg-success-hover text-white font-bold text-lg py-4 rounded-lg shadow transition-colors"
-        @click="store.openUrl('https://github.com/itmir913/WordFinderApp/releases/latest/download/WordFinderApp.zip')"
+        @click="store.openUrl(store.latestReleaseUrl || 'https://github.com/itmir913/WordFinderApp/releases/latest')"
       >
         📥 최신버전 다운로드하기
       </button>

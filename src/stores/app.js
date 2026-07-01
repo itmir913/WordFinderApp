@@ -31,6 +31,7 @@ export const useAppStore = defineStore('app', {
 
     // 최신버전 (null: 미조회, '': 조회 실패)
     latestVersion: null,
+    latestReleaseUrl: '',
 
     // 연속 공백 검사 옵션
     detectConsecutiveSpaces: true,
@@ -226,8 +227,10 @@ export const useAppStore = defineStore('app', {
         const res = await fetch('https://api.github.com/repos/itmir913/WordFinderApp/releases/latest');
         const data = await res.json();
         this.latestVersion = data.tag_name ?? '';
+        this.latestReleaseUrl = data.html_url ?? '';
       } catch {
         this.latestVersion = '';
+        this.latestReleaseUrl = '';
       }
     },
 
