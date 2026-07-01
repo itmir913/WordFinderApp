@@ -1,5 +1,7 @@
 # 🔍 학교생활기록부 일괄 점검 프로그램
 
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-orange)](https://polyformproject.org/licenses/noncommercial/1.0.0) [![GitHub Release](https://img.shields.io/github/v/tag/itmir913/WordFinderApp?label=latest&color=blue)](https://github.com/itmir913/WordFinderApp/tags)
+
 본 프로그램은 교사가 학교생활기록부를 효율적으로 점검할 수 있도록 돕는 도구입니다. **PDF와 Excel(.xlsx)** 파일을 지원하며, 발견된 단어를 자동으로 강조하고 북마크를 생성합니다.
 
 ---
