@@ -1,5 +1,6 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { PDFDocument, PDFName, PDFNumber, PDFHexString } from 'pdf-lib';
 import pdfjsWorkerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
@@ -41,21 +42,25 @@ const CONSEC_SPACE_PATTERN = /(?<! ) {2,5}(?! )/g;
 const CONSEC_SPACE_LABEL = '연속 공백';
 
 async function processPdf({ id, name, outputPath, data, keywords, detectConsecutiveSpaces }) {
+  if (!keywords || keywords.length === 0) {
+    self.postMessage({ type: 'error', id, name, message: '검색 단어 목록이 비어 있습니다.' });
+    return;
+  }
+
   self.postMessage({ type: 'progress', id, status: '처리중' });
   self.postMessage({ type: 'log', message: `▶ PDF 처리 시작: ${name}` });
 
-  const pattern = buildPattern(keywords);
+  const { pattern, kwMap } = buildPattern(keywords);
 
   // Step 1: pdfjs-dist로 텍스트 위치 추출
-  // data.slice()로 복사 — pdfjs가 내부적으로 버퍼를 소비할 수 있으므로
   const pdf = await pdfjsLib.getDocument({ data: data.slice() }).promise;
-  const pageHighlights = []; // { pageIndex, rects, keywords }
+  const pageHighlights = [];
   let totalFound = 0;
 
   for (let p = 1; p <= pdf.numPages; p++) {
     const page = await pdf.getPage(p);
     const content = await page.getTextContent();
-    const { rects, matchedKeywords } = findKeywordRectsAndKeywords(content.items, pattern);
+    const { rects, matchedKeywords } = findKeywordRectsAndKeywords(content.items, pattern, kwMap);
     if (rects.length > 0) {
       pageHighlights.push({ pageIndex: p - 1, rects, keywords: matchedKeywords });
       totalFound += rects.length;
@@ -88,8 +93,8 @@ async function processPdf({ id, name, outputPath, data, keywords, detectConsecut
   self.postMessage({ type: 'log', message: `✅ PDF 완료 | 탐지 ${totalFound}건, 북마크 ${outlineItems.length}개 → ${outputPath}` });
 }
 
-// 텍스트 아이템 목록에서 키워드 위치와 매칭된 키워드 Set을 반환
-function findKeywordRectsAndKeywords(items, pattern) {
+// 텍스트 아이템 목록에서 키워드 위치와 원본 키워드 Set을 반환
+function findKeywordRectsAndKeywords(items, pattern, kwMap) {
   const segments = items
     .filter(item => item.str)
     .map(item => ({
@@ -122,7 +127,7 @@ function findKeywordRectsAndKeywords(items, pattern) {
   const matchedKeywords = new Set();
 
   for (const match of fullText.matchAll(pattern)) {
-    matchedKeywords.add(match[0]);
+    const originalKw = kwMap.get(match[0].toLowerCase()) ?? match[0];
 
     const start = match.index;
     const end = start + match[0].length;
@@ -155,16 +160,16 @@ function findKeywordRectsAndKeywords(items, pattern) {
         w: (xEnd - xStart) + padX * 2,
         h: seg.fontSize * 1.4 + padY,
       });
+      // rect 생성 성공 시에만 키워드 등록 (rect 없는 매칭이 북마크에 포함되는 것 방지)
+      matchedKeywords.add(originalKw);
     }
   }
-
 
   return { rects, matchedKeywords };
 }
 
 // pdf-lib으로 PDF 북마크(Outlines) 추가
 function addOutlines(pdfDoc, items) {
-  // items: [{ title: string, pageIndex: number }]
   const { context, catalog } = pdfDoc;
 
   // 한글 등 유니코드 타이틀 → UTF-16 BE HexString (PDF 스펙)
@@ -177,7 +182,6 @@ function addOutlines(pdfDoc, items) {
     return PDFHexString.of(bytes.map(b => b.toString(16).padStart(2, '0')).join(''));
   }
 
-  // 각 북마크 딕셔너리 생성 (Parent는 나중에 설정)
   const itemDicts = items.map(({ title, pageIndex }) => {
     const pageRef = pdfDoc.getPage(pageIndex).ref;
     return context.obj({
@@ -188,7 +192,6 @@ function addOutlines(pdfDoc, items) {
 
   const itemRefs = itemDicts.map(d => context.register(d));
 
-  // 루트 Outlines 딕셔너리
   const rootDict = context.obj({
     Type: PDFName.of('Outlines'),
     First: itemRefs[0],
@@ -197,14 +200,12 @@ function addOutlines(pdfDoc, items) {
   });
   const rootRef = context.register(rootDict);
 
-  // 각 아이템에 Parent / Prev / Next 연결
   for (let i = 0; i < itemDicts.length; i++) {
     itemDicts[i].set(PDFName.of('Parent'), rootRef);
     if (i > 0) itemDicts[i].set(PDFName.of('Prev'), itemRefs[i - 1]);
     if (i < itemDicts.length - 1) itemDicts[i].set(PDFName.of('Next'), itemRefs[i + 1]);
   }
 
-  // 카탈로그에 등록 + 북마크 패널 자동 열기
   catalog.set(PDFName.of('Outlines'), rootRef);
   catalog.set(PDFName.of('PageMode'), PDFName.of('UseOutlines'));
 }
@@ -240,42 +241,86 @@ function addHighlightAnnotation(pdfDoc, page, { x, y, w, h }) {
 
 // ── Excel 처리 ────────────────────────────────────────────────────
 async function processExcel({ id, name, outputPath, data, keywords, detectConsecutiveSpaces }) {
+  if (!keywords || keywords.length === 0) {
+    self.postMessage({ type: 'error', id, name, message: '검색 단어 목록이 비어 있습니다.' });
+    return;
+  }
+
   self.postMessage({ type: 'progress', id, status: '처리중' });
   self.postMessage({ type: 'log', message: `▶ Excel 처리 시작: ${name}` });
 
-  const pattern = buildPattern(keywords);
+  const { pattern, kwMap } = buildPattern(keywords);
+
+  // SheetJS로 읽기
   const wb = XLSX.read(data, { type: 'array' });
   const wsName = wb.SheetNames[0];
   const ws = wb.Sheets[wsName];
-
   const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-  const header = rows[0] ?? [];
+  const rawHeader = rows[0] ?? [];
 
-  header.push('발견여부', '발견된 단어');
+  // 이미 처리된 파일 재실행 시 기존 결과 컬럼 제거
+  const removeIndices = new Set(
+    rawHeader.map((h, i) => (h === '발견여부' || h === '발견된 단어') ? i : -1).filter(i => i >= 0)
+  );
+  const header = rawHeader.filter((_, i) => !removeIndices.has(i));
 
-  const resultRows = [header];
+  const outputHeader = [...header, '발견여부', '발견된 단어'];
+  const resultRows = [outputHeader];
   let detectedCount = 0;
 
   for (let r = 1; r < rows.length; r++) {
-    const row = rows[r];
-    const cellText = row.join(' ');
-    const matches = [...cellText.matchAll(pattern)].map(m => m[0]);
-    const unique = [...new Set(matches)];
-    if (detectConsecutiveSpaces) {
-      const hasConsec = row.some(cell => CONSEC_SPACE_PATTERN.test(String(cell)));
-      // RegExp.test()은 lastIndex를 변경하므로 초기화
-      CONSEC_SPACE_PATTERN.lastIndex = 0;
-      if (hasConsec) unique.push(CONSEC_SPACE_LABEL);
+    const row = rows[r].filter((_, i) => !removeIndices.has(i));
+    const foundSet = new Set();
+
+    // 셀 단위 독립 매칭
+    for (const cell of row) {
+      for (const match of String(cell).matchAll(pattern)) {
+        const originalKw = kwMap.get(match[0].toLowerCase()) ?? match[0];
+        foundSet.add(originalKw);
+      }
     }
-    const detected = unique.length > 0;
+
+    if (detectConsecutiveSpaces) {
+      for (const cell of row) {
+        CONSEC_SPACE_PATTERN.lastIndex = 0;
+        if (CONSEC_SPACE_PATTERN.test(String(cell))) {
+          foundSet.add(CONSEC_SPACE_LABEL);
+          break;
+        }
+      }
+      CONSEC_SPACE_PATTERN.lastIndex = 0;
+    }
+
+    // 가나다순 정렬
+    const sorted = [...foundSet].sort((a, b) => a.localeCompare(b, 'ko'));
+    const detected = sorted.length > 0;
     if (detected) detectedCount++;
-    resultRows.push([...row, detected ? 'TRUE' : 'FALSE', unique.join(', ')]);
+    resultRows.push([...row, detected ? 'TRUE' : 'FALSE', sorted.join(', ')]);
   }
 
-  const newWs = XLSX.utils.aoa_to_sheet(resultRows);
-  wb.Sheets[wsName] = newWs;
-  const outBytes = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  const resultData = new Uint8Array(outBytes);
+  // ExcelJS로 내보내기 (노란색 행 강조 포함)
+  const detectedColIndex = outputHeader.indexOf('발견여부'); // 0-based
+  const colCount = outputHeader.length;
+
+  const excelWb = new ExcelJS.Workbook();
+  const excelWs = excelWb.addWorksheet(wsName);
+
+  for (let r = 0; r < resultRows.length; r++) {
+    const excelRow = excelWs.addRow(resultRows[r]);
+
+    if (r > 0 && resultRows[r][detectedColIndex] === 'TRUE') {
+      for (let c = 1; c <= colCount; c++) {
+        excelRow.getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFFFFF00' },
+        };
+      }
+    }
+  }
+
+  const buffer = await excelWb.xlsx.writeBuffer();
+  const resultData = new Uint8Array(buffer);
 
   self.postMessage(
     { type: 'result', id, name, outputPath, data: resultData },
@@ -288,9 +333,15 @@ async function processExcel({ id, name, outputPath, data, keywords, detectConsec
 }
 
 // ── 공통 ──────────────────────────────────────────────────────────
+
+// 키워드 배열 → { pattern, kwMap } 반환
+// kwMap: lowercase(keyword) → 원본 keyword (북마크/발견단어 표시용)
 function buildPattern(keywords) {
-  const escaped = [...keywords].sort((a, b) => b.length - a.length).map(escapeRegex);
-  return new RegExp(escaped.join('|'), 'gi');
+  const sorted = [...keywords].sort((a, b) => b.length - a.length);
+  const escaped = sorted.map(escapeRegex);
+  const pattern = new RegExp(escaped.join('|'), 'gi');
+  const kwMap = new Map(sorted.map(kw => [kw.toLowerCase(), kw]));
+  return { pattern, kwMap };
 }
 
 function escapeRegex(str) {

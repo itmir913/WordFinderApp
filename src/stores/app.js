@@ -35,6 +35,9 @@ export const useAppStore = defineStore('app', {
 
     // 연속 공백 검사 옵션
     detectConsecutiveSpaces: true,
+
+    // CSV 출처: 'user' | 'default_file' | 'embedded' | ''
+    csvSource: '',
   }),
 
   getters: {
@@ -53,7 +56,7 @@ export const useAppStore = defineStore('app', {
     async loadCsvFromPath(path) {
       try {
         const content = await invoke('read_file_bytes', { path });
-        this._parseCsvBytes(content, path);
+        this._parseCsvBytes(content, path, 'user');
       } catch (e) {
         this.addLog(`❌ CSV 로드 실패: ${e}`);
         throw e;
@@ -69,28 +72,32 @@ export const useAppStore = defineStore('app', {
     },
 
     async loadDefaultCsv() {
-      try {
-        const content = await invoke('load_default_csv');
-        this._parseCsvString(content, '(기본값)');
-      } catch {
-        // default.csv 없으면 조용히 무시
-      }
+      const { content, source } = await invoke('load_default_csv');
+      const label = source === 'embedded' ? '(내장 단어 목록)' : '(기본값: default.csv)';
+      this._parseCsvString(content, label, source);
     },
 
-    _parseCsvBytes(bytes, path) {
+    _parseCsvBytes(bytes, path, source) {
       const decoder = new TextDecoder('utf-8');
       const text = decoder.decode(new Uint8Array(bytes));
-      this._parseCsvString(text, path);
+      this._parseCsvString(text, path, source);
     },
 
-    _parseCsvString(text, path) {
+    _parseCsvString(text, path, source) {
       const lines = text.split(/\r?\n/).slice(1); // 헤더 제거
       const kws = [...new Set(
         lines.map(l => l.split(',')[0].trim()).filter(Boolean)
       )];
       this.keywords = kws;
       this.csvPath = path;
-      this.addLog(`✅ CSV 로드 완료: ${kws.length}개 | ${path}`);
+      this.csvSource = source ?? 'user';
+      if (source === 'embedded') {
+        this.addLog(`✅ 프로그램 내장 단어 목록 로드: ${kws.length}개`);
+      } else if (source === 'default_file') {
+        this.addLog(`✅ default.csv 로드: ${kws.length}개`);
+      } else {
+        this.addLog(`✅ CSV 로드 완료: ${kws.length}개 | ${path}`);
+      }
     },
 
     // ── 파일 목록 ─────────────────────────────────────
