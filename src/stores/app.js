@@ -1,13 +1,12 @@
 import { defineStore } from 'pinia';
 import { invoke } from '@tauri-apps/api/core';
-import { open, save } from '@tauri-apps/plugin-dialog';
+import { getVersion } from '@tauri-apps/api/app';
+import { open } from '@tauri-apps/plugin-dialog';
 import { openUrl } from '@tauri-apps/plugin-opener';
-
-const VERSION = 'v2026.04.26-0315';
 
 export const useAppStore = defineStore('app', {
   state: () => ({
-    version: VERSION,
+    version: '',
 
     // CSV / 키워드
     csvPath: '',
@@ -37,6 +36,12 @@ export const useAppStore = defineStore('app', {
   },
 
   actions: {
+    // ── 앱 초기화 ─────────────────────────────────────
+    async init() {
+      this.version = await getVersion();
+      await this.loadDefaultCsv();
+    },
+
     // ── CSV ──────────────────────────────────────────
     async loadCsvFromPath(path) {
       try {

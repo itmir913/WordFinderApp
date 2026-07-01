@@ -20,7 +20,7 @@ const TABS = [
 ];
 
 onMounted(async () => {
-  await store.loadDefaultCsv();
+  await store.init();
 
   // Tauri 파일 드래그앤드롭 이벤트 등록
   const appWindow = getCurrentWindow();
