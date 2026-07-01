@@ -156,6 +156,11 @@ export const useAppStore = defineStore('app', {
         { type: 'module' }
       );
 
+      this._worker.onerror = (e) => {
+        this.addLog(`❌ Worker 오류: ${e.message ?? e}`);
+        this._cleanup();
+      };
+
       this._worker.onmessage = async (e) => {
         const msg = e.data;
         switch (msg.type) {
