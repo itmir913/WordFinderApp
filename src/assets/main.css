@@ -23,6 +23,6 @@
   --color-status-failed: #F8D7DA;
 }
 
-* {
+*, code, pre, kbd, samp {
   font-family: var(--font-sans);
 }
