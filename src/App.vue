@@ -57,7 +57,7 @@ onMounted(async () => {
           <button
             v-for="(tab, i) in TABS"
             :key="i"
-            class="px-5 py-2 font-bold text-base border-t border-x border-[#E9ECEF] rounded-t-lg -mb-px transition-colors"
+            class="px-5 py-2 font-bold text-base border-x border-[#E9ECEF] rounded-t-lg -mb-px transition-colors"
             :class="store.activeTab === i
               ? 'bg-white text-[#212529] border-b-white'
               : 'bg-app-bg text-app-muted hover:bg-[#F1F3F5]'"
