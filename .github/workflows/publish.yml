@@ -1,0 +1,121 @@
+name: "publish"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest"
+            script: "tauri:macos"
+            rust_target: "aarch64-apple-darwin,x86_64-apple-darwin"
+            artifact_name: "macos"
+          - platform: "windows-latest"
+            script: "tauri:windows:portable"
+            rust_target: ""
+            artifact_name: "windows-x64"
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: install macOS dependencies
+        if: matrix.platform == 'macos-latest'
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
+      - name: install frontend dependencies
+        run: npm install
+
+      - name: build
+        run: npm run ${{ matrix.script }}
+
+      - name: get version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(node -p 'require("./src-tauri/tauri.conf.json").version')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: package portable artifact (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          $VERSION = "${{ steps.version.outputs.VERSION }}"
+          $DIR = "WordFinderApp-${VERSION}-windows-x64-portable"
+          New-Item -ItemType Directory -Path $DIR
+          Copy-Item "src-tauri/target/release/wordfinderapp.exe" "$DIR/WordFinderApp.exe"
+          Copy-Item "default.csv" "$DIR/default.csv"
+          Compress-Archive -Path $DIR -DestinationPath "${DIR}.zip"
+
+      - name: rename macOS artifact
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          SRC=$(ls src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg | head -1)
+          cp "$SRC" "WordFinderApp-${VERSION}-macos.dmg"
+
+      - name: upload Windows portable
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64-portable
+          path: WordFinderApp-${{ steps.version.outputs.VERSION }}-windows-x64-portable.zip
+
+      - name: upload macOS dmg
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: WordFinderApp-${{ steps.version.outputs.VERSION }}-macos.dmg
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: get version
+        id: version
+        run: |
+          VERSION=$(node -p 'require("./src-tauri/tauri.conf.json").version')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: create draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --notes "See the assets to download this version and install." \
+            --draft \
+            artifacts/*
