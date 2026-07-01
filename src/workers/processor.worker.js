@@ -143,12 +143,14 @@ function findKeywordRectsAndKeywords(items, pattern) {
       const charCount = seg.text.length || 1;
       const xStart = seg.x + seg.width * (minChar / charCount);
       const xEnd   = seg.x + seg.width * ((maxChar + 1) / charCount);
+      const padX = seg.fontSize * 0.15;
+      const padY = seg.fontSize * 0.15;
 
       rects.push({
-        x: xStart,
-        y: seg.y - seg.fontSize * 0.1,
-        w: xEnd - xStart,
-        h: seg.fontSize * 1.2,
+        x: xStart - padX,
+        y: seg.y - seg.fontSize * 0.2 - padY,
+        w: (xEnd - xStart) + padX * 2,
+        h: seg.fontSize * 1.4 + padY,
       });
     }
   }
