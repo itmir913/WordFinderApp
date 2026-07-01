@@ -48,35 +48,5 @@ const store = useAppStore();
       [🗑 전체 비우기]를 통해 목록을 초기화할 수 있습니다.
     </div>
 
-    <div class="border border-[#DEE2E6] rounded-lg p-5 mt-8 text-base">
-      <h3 class="text-lg font-bold text-primary mt-0 mb-3">ℹ️ 프로그램 정보</h3>
-      <p class="mb-3 leading-7">
-        <strong>버전:</strong> {{ store.version }}<br />
-        <strong>제작자:</strong> 운양고등학교 이종환T<br />
-        <strong>이메일:</strong>
-        <a
-          href="#"
-          class="text-[#3498DB] underline ml-1"
-          @click.prevent="store.openUrl('mailto:hello@luminousky.com')"
-        >hello@luminousky.com</a><br />
-        <strong>공식 홈페이지:</strong>
-        <a
-          href="#"
-          class="text-[#3498DB] underline ml-1"
-          @click.prevent="store.openUrl('https://luminousky.com/teacher-utility-kit/neis-wordfinder/')"
-        >luminousky.com</a><br />
-        <strong>GitHub:</strong>
-        <a
-          href="#"
-          class="text-[#3498DB] underline ml-1"
-          @click.prevent="store.openUrl('https://github.com/itmir913/WordFinderApp/releases')"
-        >방문하기</a>
-      </p>
-      <div class="bg-app-bg rounded p-3 text-[#495057] text-base">
-        본 프로그램은 <strong>PolyForm Noncommercial License 1.0.0</strong>을 따릅니다.<br />
-        개인 및 학교 등 교육 현장에서 자유롭게 사용하실 수 있습니다.<br />
-        <strong class="text-danger">※ 상업적 이용, 유료 판매 및 이를 활용한 모든 영리 활동은 엄격히 금지됩니다.</strong>
-      </div>
-    </div>
   </div>
 </template>
