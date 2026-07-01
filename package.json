@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:windows:portable": "tauri build --no-bundle",
-    "tauri:macos": "tauri build --target universal-apple-darwin --bundles dmg"
+    "tauri:macos": "tauri build --target universal-apple-darwin --bundles dmg",
+    "clean": "cargo clean --manifest-path src-tauri/Cargo.toml"
   },
   "dependencies": {
     "@lucide/vue": "^1.22.0",
