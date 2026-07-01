@@ -7,7 +7,7 @@ const store = useAppStore();
 <template>
   <div class="bg-white border border-[#DEE2E6] rounded-lg px-4 pt-5 pb-3 relative shrink-0">
     <span class="absolute -top-[11px] left-3 px-2 bg-white text-[#495057] text-base font-bold">
-      검색 기준 설정 (단어 목록)
+      검색할 단어 목록 설정
     </span>
 
     <div class="flex items-center gap-2">
@@ -35,7 +35,7 @@ const store = useAppStore();
           :disabled="store.isProcessing"
           class="w-4 h-4 accent-primary cursor-pointer"
         />
-        <span class="text-base text-[#495057]">연속된 공백 검사 <span class="text-app-muted">(2~5칸)</span></span>
+        <span class="text-base text-[#495057]">연속된 공백(2~5칸) 검사 <span class="text-app-muted">(Excel 전용)</span></span>
       </label>
 
       <span

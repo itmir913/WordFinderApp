@@ -10,8 +10,8 @@ const store = useAppStore();
     </h2>
 
     <p class="mb-5">
-      이 프로그램은 <strong>PDF</strong> 및 <strong>Excel(.xlsx)</strong> 파일 내에 특정 단어(CSV)가
-      포함되어 있는지 일괄로 검사하는 도구입니다.
+      이 프로그램은 <strong>PDF</strong> 및 <strong>Excel(.xlsx)</strong>
+      파일 내에 특정 단어가 포함되어 있는지 일괄 검사하는 도구입니다.
       모든 처리는 로컬에서만 이루어지며 데이터가 외부로 전송되지 않습니다.
     </p>
 

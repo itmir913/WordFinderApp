@@ -55,7 +55,7 @@ async function processPdf({ id, name, outputPath, data, keywords, detectConsecut
   for (let p = 1; p <= pdf.numPages; p++) {
     const page = await pdf.getPage(p);
     const content = await page.getTextContent();
-    const { rects, matchedKeywords } = findKeywordRectsAndKeywords(content.items, pattern, detectConsecutiveSpaces);
+    const { rects, matchedKeywords } = findKeywordRectsAndKeywords(content.items, pattern);
     if (rects.length > 0) {
       pageHighlights.push({ pageIndex: p - 1, rects, keywords: matchedKeywords });
       totalFound += rects.length;
@@ -89,7 +89,7 @@ async function processPdf({ id, name, outputPath, data, keywords, detectConsecut
 }
 
 // 텍스트 아이템 목록에서 키워드 위치와 매칭된 키워드 Set을 반환
-function findKeywordRectsAndKeywords(items, pattern, detectConsecutiveSpaces = false) {
+function findKeywordRectsAndKeywords(items, pattern) {
   const segments = items
     .filter(item => item.str)
     .map(item => ({
@@ -158,28 +158,6 @@ function findKeywordRectsAndKeywords(items, pattern, detectConsecutiveSpaces = f
     }
   }
 
-  // 연속 공백 검사: 세그먼트별로 직접 검사 (인위적 gap 공백과 분리)
-  if (detectConsecutiveSpaces) {
-    for (const seg of segments) {
-      CONSEC_SPACE_PATTERN.lastIndex = 0;
-      for (const match of seg.text.matchAll(CONSEC_SPACE_PATTERN)) {
-        matchedKeywords.add(CONSEC_SPACE_LABEL);
-        const minChar = match.index;
-        const maxChar = match.index + match[0].length - 1;
-        const charCount = seg.text.length || 1;
-        const xStart = seg.x + seg.width * (minChar / charCount);
-        const xEnd   = seg.x + seg.width * ((maxChar + 1) / charCount);
-        const padX = seg.fontSize * 0.15;
-        const padY = seg.fontSize * 0.15;
-        rects.push({
-          x: xStart - padX,
-          y: seg.y - seg.fontSize * 0.2 - padY,
-          w: (xEnd - xStart) + padX * 2,
-          h: seg.fontSize * 1.4 + padY,
-        });
-      }
-    }
-  }
 
   return { rects, matchedKeywords };
 }
