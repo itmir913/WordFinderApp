@@ -222,8 +222,7 @@ export const useAppStore = defineStore('app', {
       try {
         const res = await fetch('https://api.github.com/repos/itmir913/WordFinderApp/releases/latest');
         const data = await res.json();
-        const tag = (data.tag_name ?? '').replace(/^v/, '');
-        this.latestVersion = tag;
+        this.latestVersion = data.tag_name ?? '';
       } catch {
         this.latestVersion = '';
       }
