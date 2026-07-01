@@ -48,7 +48,11 @@ export const useAppStore = defineStore('app', {
   actions: {
     // ── 앱 초기화 ─────────────────────────────────────
     async init() {
-      this.version = await getVersion();
+      try {
+        this.version = await getVersion();
+      } catch (e) {
+        this.addLog(`❌ 버전 정보 로드 실패: ${e}`);
+      }
       await this.loadDefaultCsv();
     },
 
@@ -64,17 +68,25 @@ export const useAppStore = defineStore('app', {
     },
 
     async selectCsv() {
-      const path = await open({
-        filters: [{ name: 'CSV 파일', extensions: ['csv'] }],
-        multiple: false,
-      });
-      if (path) await this.loadCsvFromPath(path);
+      try {
+        const path = await open({
+          filters: [{ name: 'CSV 파일', extensions: ['csv'] }],
+          multiple: false,
+        });
+        if (path) await this.loadCsvFromPath(path);
+      } catch (e) {
+        this.addLog(`❌ 파일 선택 실패: ${e}`);
+      }
     },
 
     async loadDefaultCsv() {
-      const { content, source } = await invoke('load_default_csv');
-      const label = source === 'embedded' ? '(내장 단어 목록)' : '(기본값: default.csv)';
-      this._parseCsvString(content, label, source);
+      try {
+        const { content, source } = await invoke('load_default_csv');
+        const label = source === 'embedded' ? '(내장 단어 목록)' : '(기본값: default.csv)';
+        this._parseCsvString(content, label, source);
+      } catch (e) {
+        this.addLog(`❌ 기본 CSV 로드 실패: ${e}`);
+      }
     },
 
     _parseCsvBytes(bytes, path, source) {
@@ -116,11 +128,15 @@ export const useAppStore = defineStore('app', {
     },
 
     async selectFiles() {
-      const paths = await open({
-        filters: [{ name: '지원 파일', extensions: ['pdf', 'xlsx'] }],
-        multiple: true,
-      });
-      if (paths) this.addFiles(Array.isArray(paths) ? paths : [paths]);
+      try {
+        const paths = await open({
+          filters: [{ name: '지원 파일', extensions: ['pdf', 'xlsx'] }],
+          multiple: true,
+        });
+        if (paths) this.addFiles(Array.isArray(paths) ? paths : [paths]);
+      } catch (e) {
+        this.addLog(`❌ 파일 선택 실패: ${e}`);
+      }
     },
 
     removeFile(id) {
@@ -158,6 +174,11 @@ export const useAppStore = defineStore('app', {
 
       this._worker.onerror = (e) => {
         this.addLog(`❌ Worker 오류: ${e.message ?? e}`);
+        this._cleanup();
+      };
+
+      this._worker.onmessageerror = (e) => {
+        this.addLog(`❌ Worker 메시지 역직렬화 오류: ${e}`);
         this._cleanup();
       };
 
@@ -248,7 +269,11 @@ export const useAppStore = defineStore('app', {
 
     // ── 외부 링크 ─────────────────────────────────────
     async openUrl(url) {
-      await openUrl(url);
+      try {
+        await openUrl(url);
+      } catch (e) {
+        this.addLog(`❌ 링크 열기 실패: ${e}`);
+      }
     },
   },
 });
