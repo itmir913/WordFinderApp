@@ -1,0 +1,28 @@
+@import "pretendard/dist/web/static/pretendard.css";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Pretendard Variable', Pretendard, 'Malgun Gothic', 'Segoe UI', sans-serif;
+
+  --color-app-bg: #F8F9FA;
+  --color-app-border: #CED4DA;
+  --color-app-section: #FFFFFF;
+  --color-app-muted: #6C757D;
+
+  --color-primary: #4DABF7;
+  --color-primary-hover: #339AF0;
+  --color-success: #20C997;
+  --color-success-hover: #12B886;
+  --color-danger: #FA5252;
+  --color-danger-hover: #F03E3E;
+  --color-warning: #FFC107;
+
+  --color-status-pending: #FFFFFF;
+  --color-status-processing: #FFF3CD;
+  --color-status-done: #D4EDDA;
+  --color-status-failed: #F8D7DA;
+}
+
+* {
+  font-family: var(--font-sans);
+}

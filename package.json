@@ -1,0 +1,33 @@
+{
+  "name": "wordfinderapp",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:windows:portable": "tauri build --no-bundle",
+    "tauri:macos": "tauri build --target universal-apple-darwin --bundles dmg"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.22.0",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2.7.1",
+    "@tauri-apps/plugin-fs": "^2.5.1",
+    "@tauri-apps/plugin-opener": "^2.5.4",
+    "pdfjs-dist": "^6.1.200",
+    "pinia": "^3.0.4",
+    "pretendard": "^1.3.9",
+    "vue": "^3.5.13",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.2",
+    "@tauri-apps/cli": "^2",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "tailwindcss": "^4.3.2",
+    "vite": "^6.0.3"
+  }
+}
