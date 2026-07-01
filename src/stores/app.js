@@ -29,7 +29,7 @@ export const useAppStore = defineStore('app', {
     // Web Worker
     _worker: null,
 
-    // 최신 버전 (null: 미조회, '': 조회 실패)
+    // 최신버전 (null: 미조회, '': 조회 실패)
     latestVersion: null,
   }),
 
@@ -217,7 +217,7 @@ export const useAppStore = defineStore('app', {
       this.logs.push(`[${now}] ${message}`);
     },
 
-    // ── 최신 버전 확인 ────────────────────────────────
+    // ── 최신버전 확인 ────────────────────────────────
     async fetchLatestVersion() {
       try {
         const res = await fetch('https://api.github.com/repos/itmir913/WordFinderApp/releases/latest');

@@ -41,14 +41,14 @@ const versionStatus = computed(() => {
           href="#"
           class="text-[#3498DB] underline"
           @click.prevent="store.openUrl('https://luminousky.com/teacher-utility-kit/neis-wordfinder/')"
-        >luminousky.com</a>
+        >https://luminousky.com/teacher-utility-kit/neis-wordfinder/</a>
 
         <span class="font-bold text-[#495057]">GitHub</span>
         <a
           href="#"
           class="text-[#3498DB] underline"
           @click.prevent="store.openUrl('https://github.com/itmir913/WordFinderApp')"
-        >github.com/itmir913/WordFinderApp</a>
+        >https://github.com/itmir913/WordFinderApp</a>
       </div>
 
       <div class="bg-app-bg rounded-lg px-4 py-3 mt-5 text-[#495057]">
@@ -84,20 +84,20 @@ const versionStatus = computed(() => {
       </div>
 
       <p class="text-app-muted mb-5">
-        기능 개선 및 버그가 수정된 최신 버전은 GitHub Release 페이지에서 다운로드할 수 있습니다.
+        기능 개선 및 버그가 수정된 최신버전은 GitHub Release 페이지에서 다운로드할 수 있습니다.
       </p>
 
       <button
         class="w-full bg-success hover:bg-success-hover text-white font-bold text-lg py-4 rounded-lg shadow transition-colors"
         @click="store.openUrl('https://github.com/itmir913/WordFinderApp/releases/latest/download/WordFinderApp.zip')"
       >
-        📥 최신 버전 다운로드하기
+        📥 최신버전 다운로드하기
       </button>
 
       <div class="bg-[#E7F1FF] border-l-4 border-primary px-4 py-3 mt-5">
         <p class="font-bold text-[#0056B3] mb-2">💡 업데이트 방법</p>
         <ul class="list-disc pl-5 space-y-1 text-[#343A40]">
-          <li>위 버튼을 클릭하여 최신 버전의 압축 파일(ZIP)을 다운로드합니다.</li>
+          <li>위 버튼을 클릭하여 최신버전의 압축 파일(ZIP)을 다운로드합니다.</li>
           <li>기존 프로그램을 삭제하고, 새로 다운로드한 파일을 압축 해제하여 사용하세요.</li>
         </ul>
       </div>
