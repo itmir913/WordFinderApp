@@ -1,3 +1,6 @@
+import { Buffer } from 'buffer';
+globalThis.Buffer = Buffer;
+
 import * as pdfjsLib from 'pdfjs-dist';
 import * as XLSX from 'xlsx';
 import ExcelJS from 'exceljs';
