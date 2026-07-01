@@ -1,8 +1,8 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import * as XLSX from 'xlsx';
+import pdfjsWorkerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
-// PDF.js: 워커 안에서 실행이므로 내부 워커 비활성화
-pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerSrc;
 
 // 처리 대기 큐 (flush 신호 전까지 순차 처리)
 const queue = [];
