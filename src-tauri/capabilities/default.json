@@ -9,7 +9,6 @@
     "opener:allow-open-url",
     "dialog:default",
     "dialog:allow-open",
-    "dialog:allow-save",
-    "fs:default"
+    "dialog:allow-save"
   ]
 }
