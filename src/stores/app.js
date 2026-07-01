@@ -31,6 +31,9 @@ export const useAppStore = defineStore('app', {
 
     // 최신버전 (null: 미조회, '': 조회 실패)
     latestVersion: null,
+
+    // 연속 공백 검사 옵션
+    detectConsecutiveSpaces: false,
   }),
 
   getters: {
@@ -187,7 +190,7 @@ export const useAppStore = defineStore('app', {
           const outputPath = file.path.replace(/[^/\\]+$/, `output_${file.name}`);
           const data = new Uint8Array(bytes);
           this._worker.postMessage(
-            { type: 'process', id: file.id, name: file.name, ext, outputPath, data, keywords: [...this.keywords] },
+            { type: 'process', id: file.id, name: file.name, ext, outputPath, data, keywords: [...this.keywords], detectConsecutiveSpaces: this.detectConsecutiveSpaces },
             [data.buffer]
           );
         } catch (e) {

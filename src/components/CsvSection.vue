@@ -7,7 +7,7 @@ const store = useAppStore();
 <template>
   <div class="bg-white border border-[#DEE2E6] rounded-lg px-4 pt-5 pb-3 relative shrink-0">
     <span class="absolute -top-[11px] left-3 px-2 bg-white text-[#495057] text-base font-bold">
-      Step 1. 검색 기준 설정 (단어 목록)
+      검색 기준 설정 (단어 목록)
     </span>
 
     <div class="flex items-center gap-2">
@@ -27,7 +27,17 @@ const store = useAppStore();
       </button>
     </div>
 
-    <div class="flex justify-end mt-1.5">
+    <div class="flex items-center justify-between mt-2">
+      <label class="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          v-model="store.detectConsecutiveSpaces"
+          :disabled="store.isProcessing"
+          class="w-4 h-4 accent-primary cursor-pointer"
+        />
+        <span class="text-base text-[#495057]">연속된 공백 검사 <span class="text-app-muted">(2~5칸)</span></span>
+      </label>
+
       <span
         class="text-base font-bold"
         :class="store.keywordCount > 0 ? 'text-primary' : 'text-danger'"
