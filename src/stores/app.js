@@ -33,7 +33,7 @@ export const useAppStore = defineStore('app', {
     latestVersion: null,
 
     // 연속 공백 검사 옵션
-    detectConsecutiveSpaces: false,
+    detectConsecutiveSpaces: true,
   }),
 
   getters: {
