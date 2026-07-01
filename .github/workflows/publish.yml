@@ -12,11 +12,11 @@ jobs:
       matrix:
         include:
           - platform: "macos-latest"
-            script: "tauri:macos"
+            script: "build:macos"
             rust_target: "aarch64-apple-darwin,x86_64-apple-darwin"
             artifact_name: "macos"
           - platform: "windows-latest"
-            script: "tauri:windows:portable"
+            script: "build:windows"
             rust_target: ""
             artifact_name: "windows-x64"
 

@@ -5,11 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
     "tauri": "tauri",
-    "tauri:windows:portable": "tauri build --no-bundle",
-    "tauri:macos": "tauri build --target universal-apple-darwin --bundles dmg",
+    "build:frontend": "vite build",
+    "build:windows": "tauri build --no-bundle",
+    "build:macos": "tauri build --target universal-apple-darwin --bundles dmg",
     "clean": "cargo clean --manifest-path src-tauri/Cargo.toml"
   },
   "dependencies": {
