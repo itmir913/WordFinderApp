@@ -2,6 +2,7 @@
 import { onMounted } from 'vue';
 import { useAppStore } from './stores/app.js';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import TitleBar from './components/TitleBar.vue';
 import CsvSection from './components/CsvSection.vue';
 import ActionBar from './components/ActionBar.vue';
 import GuideTab from './components/tabs/GuideTab.vue';
@@ -44,8 +45,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col h-screen w-full bg-app-bg text-[#333333] text-sm select-none">
-    <div class="flex flex-col flex-1 min-h-0 gap-2.5 px-4 pb-3 pt-2">
+  <div class="flex flex-col h-screen w-full bg-app-bg text-[#333333] text-base select-none">
+    <TitleBar />
+    <div class="flex flex-col flex-1 min-h-0 gap-2.5 px-4 pb-3 pt-4">
       <CsvSection />
 
       <!-- 탭 영역 -->
@@ -55,7 +57,7 @@ onMounted(async () => {
           <button
             v-for="(tab, i) in TABS"
             :key="i"
-            class="px-5 py-2 font-bold text-[13px] border-t border-x border-[#E9ECEF] rounded-t-lg -mb-px transition-colors"
+            class="px-5 py-2 font-bold text-base border-t border-x border-[#E9ECEF] rounded-t-lg -mb-px transition-colors"
             :class="store.activeTab === i
               ? 'bg-white text-[#212529] border-b-white'
               : 'bg-app-bg text-app-muted hover:bg-[#F1F3F5]'"

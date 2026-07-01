@@ -177,9 +177,10 @@ export const useAppStore = defineStore('app', {
           const bytes = await invoke('read_file_bytes', { path: file.path });
           const ext = file.name.split('.').pop().toLowerCase();
           const outputPath = file.path.replace(/[^/\\]+$/, `output_${file.name}`);
+          const data = new Uint8Array(bytes);
           this._worker.postMessage(
-            { type: 'process', id: file.id, name: file.name, ext, outputPath, data: new Uint8Array(bytes), keywords: this.keywords },
-            [new Uint8Array(bytes).buffer]
+            { type: 'process', id: file.id, name: file.name, ext, outputPath, data, keywords: [...this.keywords] },
+            [data.buffer]
           );
         } catch (e) {
           this.updateFileStatus(file.id, '실패');
