@@ -256,70 +256,78 @@ async function processExcel({ id, name, outputPath, data, keywords, detectConsec
 
   // SheetJS로 읽기
   const wb = XLSX.read(data, { type: 'array' });
-  const wsName = wb.SheetNames[0];
-  const ws = wb.Sheets[wsName];
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-  const rawHeader = rows[0] ?? [];
-
-  // 이미 처리된 파일 재실행 시 기존 결과 컬럼 제거
-  const removeIndices = new Set(
-    rawHeader.map((h, i) => (h === '발견여부' || h === '발견된 단어') ? i : -1).filter(i => i >= 0)
-  );
-  const header = rawHeader.filter((_, i) => !removeIndices.has(i));
-
-  const outputHeader = [...header, '발견여부', '발견된 단어'];
-  const resultRows = [outputHeader];
-  let detectedCount = 0;
-
-  for (let r = 1; r < rows.length; r++) {
-    const row = rows[r].filter((_, i) => !removeIndices.has(i));
-    const foundSet = new Set();
-
-    // 셀 단위 독립 매칭
-    for (const cell of row) {
-      for (const match of String(cell).matchAll(pattern)) {
-        const originalKw = kwMap.get(match[0].toLowerCase()) ?? match[0];
-        foundSet.add(originalKw);
-      }
-    }
-
-    if (detectConsecutiveSpaces) {
-      for (const cell of row) {
-        CONSEC_SPACE_PATTERN.lastIndex = 0;
-        if (CONSEC_SPACE_PATTERN.test(String(cell))) {
-          foundSet.add(CONSEC_SPACE_LABEL);
-          break;
-        }
-      }
-      CONSEC_SPACE_PATTERN.lastIndex = 0;
-    }
-
-    // 가나다순 정렬
-    const sorted = [...foundSet].sort((a, b) => a.localeCompare(b, 'ko'));
-    const detected = sorted.length > 0;
-    if (detected) detectedCount++;
-    resultRows.push([...row, detected ? 'TRUE' : 'FALSE', sorted.join(', ')]);
-  }
-
-  // ExcelJS로 내보내기 (노란색 행 강조 포함)
-  const detectedColIndex = outputHeader.indexOf('발견여부'); // 0-based
-  const colCount = outputHeader.length;
 
   const excelWb = new ExcelJS.Workbook();
-  const excelWs = excelWb.addWorksheet(wsName);
+  let totalDetectedCount = 0;
+  let totalRowCount = 0;
 
-  for (let r = 0; r < resultRows.length; r++) {
-    const excelRow = excelWs.addRow(resultRows[r]);
+  for (const wsName of wb.SheetNames) {
+    const ws = wb.Sheets[wsName];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    const rawHeader = rows[0] ?? [];
 
-    if (r > 0 && resultRows[r][detectedColIndex] === 'TRUE') {
-      for (let c = 1; c <= colCount; c++) {
-        excelRow.getCell(c).fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFFFFF00' },
-        };
+    // 이미 처리된 파일 재실행 시 기존 결과 컬럼 제거
+    const removeIndices = new Set(
+      rawHeader.map((h, i) => (h === '발견여부' || h === '발견된 단어') ? i : -1).filter(i => i >= 0)
+    );
+    const header = rawHeader.filter((_, i) => !removeIndices.has(i));
+
+    const outputHeader = [...header, '발견여부', '발견된 단어'];
+    const resultRows = [outputHeader];
+    let detectedCount = 0;
+
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r].filter((_, i) => !removeIndices.has(i));
+      const foundSet = new Set();
+
+      // 셀 단위 독립 매칭
+      for (const cell of row) {
+        for (const match of String(cell).matchAll(pattern)) {
+          const originalKw = kwMap.get(match[0].toLowerCase()) ?? match[0];
+          foundSet.add(originalKw);
+        }
+      }
+
+      if (detectConsecutiveSpaces) {
+        for (const cell of row) {
+          CONSEC_SPACE_PATTERN.lastIndex = 0;
+          if (CONSEC_SPACE_PATTERN.test(String(cell))) {
+            foundSet.add(CONSEC_SPACE_LABEL);
+            break;
+          }
+        }
+        CONSEC_SPACE_PATTERN.lastIndex = 0;
+      }
+
+      // 가나다순 정렬
+      const sorted = [...foundSet].sort((a, b) => a.localeCompare(b, 'ko'));
+      const detected = sorted.length > 0;
+      if (detected) detectedCount++;
+      resultRows.push([...row, detected ? 'TRUE' : 'FALSE', sorted.join(', ')]);
+    }
+
+    // ExcelJS로 시트 추가 (노란색 행 강조 포함)
+    const detectedColIndex = outputHeader.indexOf('발견여부'); // 0-based
+    const colCount = outputHeader.length;
+
+    const excelWs = excelWb.addWorksheet(wsName);
+
+    for (let r = 0; r < resultRows.length; r++) {
+      const excelRow = excelWs.addRow(resultRows[r]);
+
+      if (r > 0 && resultRows[r][detectedColIndex] === 'TRUE') {
+        for (let c = 1; c <= colCount; c++) {
+          excelRow.getCell(c).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFFF00' },
+          };
+        }
       }
     }
+
+    totalDetectedCount += detectedCount;
+    totalRowCount += resultRows.length - 1;
   }
 
   const buffer = await excelWb.xlsx.writeBuffer();
@@ -331,7 +339,7 @@ async function processExcel({ id, name, outputPath, data, keywords, detectConsec
   );
   self.postMessage({
     type: 'log',
-    message: `✅ Excel 완료 | 전체 ${resultRows.length - 1}행 중 탐지 ${detectedCount}행 → ${outputPath}`,
+    message: `✅ Excel 완료 | ${wb.SheetNames.length}개 시트, 전체 ${totalRowCount}행 중 탐지 ${totalDetectedCount}행 → ${outputPath}`,
   });
 }
 
