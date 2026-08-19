@@ -46,6 +46,7 @@ scripts/
   check-architecture.mjs   # Enforces the rules in this file
 tests/
   csv.spec.js
+  keyword-lists.spec.js    # default.csv <-> embedded list must not drift
   keywords.spec.js
   pdf-highlight.spec.js
   pdf-pipeline.spec.js     # Build PDF -> highlight -> render -> check pixels
@@ -68,6 +69,10 @@ UTF-8 (`fatal: true`) then EUC-KR.
   `cargo clippy -- -D warnings`, on windows-latest.
 - Bug fixes in `src/workers/lib/` need a regression test. Verify the test
   actually catches it: re-introduce the bug and watch it fail.
+- Editing `default.csv`? Copy it over `src-tauri/src/resources/embedded_keywords.csv`
+  too. The macOS dmg ships no `default.csv`, so those users fall back to the
+  embedded list — it drifted 57 words once before anyone noticed.
+  `tests/keyword-lists.spec.js` now fails if the two diverge.
 - Releases are manual (`publish.yml`, workflow_dispatch) and tagged from
   `src-tauri/tauri.conf.json`'s `version`.
 
