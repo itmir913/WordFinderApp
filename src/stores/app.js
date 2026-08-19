@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { invoke } from '@tauri-apps/api/core';
+import { decodeCsvBytes, parseKeywords } from '../lib/csv.js';
 import { getVersion } from '@tauri-apps/api/app';
 import { open } from '@tauri-apps/plugin-dialog';
 import { openUrl } from '@tauri-apps/plugin-opener';
@@ -83,23 +84,25 @@ export const useAppStore = defineStore('app', {
       try {
         const { content, source } = await invoke('load_default_csv');
         const label = source === 'embedded' ? '(내장 단어 목록)' : '(기본값: default.csv)';
-        this._parseCsvString(content, label, source);
+        this._parseCsvBytes(content, label, source);
       } catch (e) {
         this.addLog(`❌ 기본 CSV 로드 실패: ${e}`);
       }
     },
 
+    // 디코딩 경로는 여기 하나뿐이다 — 사용자가 고른 CSV든 default.csv든
+    // 같은 인코딩 폴백을 탄다.
     _parseCsvBytes(bytes, path, source) {
-      const decoder = new TextDecoder('utf-8');
-      const text = decoder.decode(new Uint8Array(bytes));
-      this._parseCsvString(text, path, source);
+      const { text, encoding } = decodeCsvBytes(bytes);
+      if (encoding !== 'utf-8') {
+        const how = encoding === 'unknown' ? '판별하지 못해 UTF-8로' : `${encoding}(으)로`;
+        this.addLog(`ℹ️ CSV 인코딩을 ${how} 읽었습니다.`);
+      }
+      this._parseCsvText(text, path, source);
     },
 
-    _parseCsvString(text, path, source) {
-      const lines = text.split(/\r?\n/).slice(1); // 헤더 제거
-      const kws = [...new Set(
-        lines.map(l => l.split(',')[0].trim()).filter(Boolean)
-      )];
+    _parseCsvText(text, path, source) {
+      const kws = parseKeywords(text);
       this.keywords = kws;
       this.csvPath = path;
       this.csvSource = source ?? 'user';

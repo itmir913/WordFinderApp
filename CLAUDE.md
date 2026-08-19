@@ -24,8 +24,13 @@
 src/
   assets/main.css          # Tailwind v4 entry + @theme tokens
   stores/app.js            # Single Pinia store (state + all actions)
+  lib/
+    csv.js                 # Keyword CSV decoding + parsing (pure)
   workers/
-    processor.worker.js    # PDF + Excel processing (Web Worker)
+    processor.worker.js    # PDF + Excel orchestration (Web Worker)
+    lib/
+      keywords.js          # Keyword matching (pure)
+      pdf-highlight.js     # Highlight + outline geometry (pure)
   components/
     TitleBar.vue
     CsvSection.vue
@@ -37,7 +42,34 @@ src/
       DownloadTab.vue
   App.vue                  # Root layout only
   main.js
+scripts/
+  check-architecture.mjs   # Enforces the rules in this file
+tests/
+  csv.spec.js
+  keywords.spec.js
+  pdf-highlight.spec.js
+  pdf-pipeline.spec.js     # Build PDF -> highlight -> render -> check pixels
 ```
+
+`src/lib/*` and `src/workers/lib/*` hold side-effect-free logic so they can be
+tested without a Worker or a Tauri window. Anything touching `self.postMessage`,
+`invoke()`, pdfjs, or ExcelJS stays in `processor.worker.js` / `stores/app.js`.
+
+Keyword CSV bytes are decoded in **one** place (`src/lib/csv.js`): Korean
+Windows Excel writes CP949, so Rust hands over raw bytes and the frontend tries
+UTF-8 (`fatal: true`) then EUC-KR.
+
+## CI GATE
+- `npm run ci` = architecture check -> vitest -> vite build. **This one script is
+  the gate's definition.** Add a check here, not to the workflow files —
+  `.github/workflows/ci.yml` (push/PR) and `publish.yml` (release) both just
+  call `npm run ci`.
+- Rust is gated separately in `ci.yml`: `cargo fmt --check` and
+  `cargo clippy -- -D warnings`, on windows-latest.
+- Bug fixes in `src/workers/lib/` need a regression test. Verify the test
+  actually catches it: re-introduce the bug and watch it fail.
+- Releases are manual (`publish.yml`, workflow_dispatch) and tagged from
+  `src-tauri/tauri.conf.json`'s `version`.
 
 ## CONVENTIONS
 - Rust commands: snake_case

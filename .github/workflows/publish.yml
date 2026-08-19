@@ -1,10 +1,50 @@
 name: "publish"
 
+# 수동 실행만. main에 push한다고 릴리즈가 나가지는 않는다 —
+# 릴리즈 시점은 사람이 정한다. 검사는 ci.yml이 push마다 돌린다.
 on:
   workflow_dispatch:
 
 jobs:
+  # 빌드는 10분 넘게 걸린다. 못 나갈 릴리즈라면 여기서 1분 안에 끊는다.
+  gate:
+    name: Gate
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # ci.yml이 부르는 것과 같은 한 줄. 무엇이 통과해야 배포되는지
+      # 이 파일만 읽어도 알 수 있어야 한다.
+      - run: npm run ci
+
+      - name: get version
+        id: version
+        run: echo "VERSION=$(node -p 'require("./src-tauri/tauri.conf.json").version')" >> $GITHUB_OUTPUT
+
+      # 같은 태그가 이미 있으면 릴리즈 단계에서 실패한다. 빌드를 다 돌린
+      # 뒤에 알게 되면 손해라, tauri.conf.json의 version을 올리라고 여기서 알린다.
+      - name: check version is new
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "::error::릴리즈 $VERSION 이 이미 있다. src-tauri/tauri.conf.json의 version을 올려라."
+            exit 1
+          fi
+          echo "릴리즈 대상 버전: $VERSION"
+
   build:
+    needs: gate
     permissions:
       contents: read
     strategy:
@@ -43,24 +83,19 @@ jobs:
         if: matrix.platform == 'macos-latest'
         run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
 
+      # npm install이 아니라 npm ci — 릴리즈 빌드가 package-lock.json에
+      # 없는 버전으로 조용히 올라가면 안 된다.
       - name: install frontend dependencies
-        run: npm install
+        run: npm ci
 
       - name: build
         run: npm run ${{ matrix.script }}
-
-      - name: get version
-        id: version
-        shell: bash
-        run: |
-          VERSION=$(node -p 'require("./src-tauri/tauri.conf.json").version')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: package portable artifact (Windows)
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
-          $VERSION = "${{ steps.version.outputs.VERSION }}"
+          $VERSION = "${{ needs.gate.outputs.version }}"
           $DIR = "WordFinderApp-${VERSION}-windows-x64-portable"
           New-Item -ItemType Directory -Path $DIR
           Copy-Item "src-tauri/target/release/wordfinderapp.exe" "$DIR/WordFinderApp.exe"
@@ -71,7 +106,7 @@ jobs:
         if: matrix.platform == 'macos-latest'
         shell: bash
         run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
+          VERSION=${{ needs.gate.outputs.version }}
           SRC=$(ls src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg | head -1)
           cp "$SRC" "WordFinderApp-${VERSION}-macos.dmg"
 
@@ -80,28 +115,22 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-x64-portable
-          path: WordFinderApp-${{ steps.version.outputs.VERSION }}-windows-x64-portable.zip
+          path: WordFinderApp-${{ needs.gate.outputs.version }}-windows-x64-portable.zip
 
       - name: upload macOS dmg
         if: matrix.platform == 'macos-latest'
         uses: actions/upload-artifact@v4
         with:
           name: macos
-          path: WordFinderApp-${{ steps.version.outputs.VERSION }}-macos.dmg
+          path: WordFinderApp-${{ needs.gate.outputs.version }}-macos.dmg
 
   release:
-    needs: build
+    needs: [gate, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: get version
-        id: version
-        run: |
-          VERSION=$(node -p 'require("./src-tauri/tauri.conf.json").version')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: download all artifacts
         uses: actions/download-artifact@v4
@@ -109,11 +138,12 @@ jobs:
           path: artifacts
           merge-multiple: true
 
+      # draft로 만든다 — 릴리즈 노트를 손보고 사람이 직접 publish 한다.
       - name: create draft release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ steps.version.outputs.VERSION }}"
+          VERSION="${{ needs.gate.outputs.version }}"
           gh release create "$VERSION" \
             --title "$VERSION" \
             --notes "See the assets to download this version and install." \

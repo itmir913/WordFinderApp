@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # 관문의 정의는 package.json의 `ci` 스크립트 하나다 — 아키텍처 검사 ·
+      # vitest · vite build. 여기서 단계를 풀어 쓰면, 스크립트에 검사를 더한
+      # 사람이 이 파일을 안 고쳤을 때 관문에서만 조용히 빠진다.
+      # publish.yml도 같은 한 줄을 부른다.
+      - run: npm run ci
+
+  rust:
+    name: Rust
+    # 릴리즈 대상이 Windows/macOS뿐이고, Linux에서 Tauri를 빌드하려면
+    # webkit2gtk 계열 시스템 패키지를 따로 깔아야 한다. 실제로 배포하는
+    # 플랫폼에서 검사하는 편이 설정도 단순하고 신호도 정확하다.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: cargo fmt
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+
+      # 경고를 에러로 올린다. 안 그러면 아무도 안 읽는 로그가 쌓일 뿐이다.
+      - name: cargo clippy
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings

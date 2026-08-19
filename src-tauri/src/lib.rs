@@ -2,7 +2,10 @@ const EMBEDDED_KEYWORDS: &str = include_str!("resources/embedded_keywords.csv");
 
 #[derive(serde::Serialize)]
 struct CsvLoadResult {
-    content: String,
+    // 바이트 그대로 넘긴다. read_to_string은 UTF-8만 받으므로, 한국 윈도우
+    // Excel이 저장한 CP949 default.csv를 "파일이 없는 것"처럼 취급해
+    // 조용히 내장 목록으로 넘어가 버린다. 디코딩은 프런트엔드에 한 곳으로 모았다.
+    content: Vec<u8>,
     source: String, // "default_file" | "embedded"
 }
 
@@ -12,18 +15,24 @@ fn load_default_csv() -> CsvLoadResult {
     if let Ok(exe) = std::env::current_exe() {
         if let Some(dir) = exe.parent() {
             let path = dir.join("default.csv");
-            if let Ok(content) = std::fs::read_to_string(path) {
-                return CsvLoadResult { content, source: "default_file".into() };
+            if let Ok(content) = std::fs::read(path) {
+                return CsvLoadResult {
+                    content,
+                    source: "default_file".into(),
+                };
             }
         }
     }
     // 개발 모드: 프로젝트 루트의 default.csv
-    if let Ok(content) = std::fs::read_to_string("default.csv") {
-        return CsvLoadResult { content, source: "default_file".into() };
+    if let Ok(content) = std::fs::read("default.csv") {
+        return CsvLoadResult {
+            content,
+            source: "default_file".into(),
+        };
     }
     // Fallback: 프로그램 내장 단어 목록
     CsvLoadResult {
-        content: EMBEDDED_KEYWORDS.into(),
+        content: EMBEDDED_KEYWORDS.as_bytes().to_vec(),
         source: "embedded".into(),
     }
 }

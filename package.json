@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "vite",
     "tauri": "tauri",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check:arch": "node scripts/check-architecture.mjs",
+    "ci": "npm run check:arch && npm run test && npm run build:frontend",
     "build:frontend": "vite build",
     "build:windows": "tauri build --no-bundle",
     "build:macos": "tauri build --target universal-apple-darwin --bundles dmg",
@@ -26,10 +30,12 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@napi-rs/canvas": "^1.0.7",
     "@tailwindcss/vite": "^4.3.2",
     "@tauri-apps/cli": "^2",
     "@vitejs/plugin-vue": "^5.2.1",
     "tailwindcss": "^4.3.2",
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "vitest": "^3.2.7"
   }
 }
