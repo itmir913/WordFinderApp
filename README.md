@@ -50,7 +50,49 @@
 * **PDF 처리:** `pdfjs-dist` (텍스트 위치 추출) + `pdf-lib` (하이라이트·북마크 생성)
 * **Excel 처리:** `SheetJS` (읽기) + `ExcelJS` (쓰기·노란색 행 강조)
 * **상태 관리:** `Pinia`
-* **무거운 처리:** Web Worker (`processor.worker.js`)
+* **무거운 처리:** Web Worker (`processor.worker.js`) — 순수 로직은 `src/workers/lib/`에 분리
+* **테스트:** `Vitest`
+
+### 📌 개발 명령어
+
+```bash
+npm install       # 의존성 설치
+npm run dev       # 개발 서버
+npm run tauri dev # 데스크톱 앱으로 실행
+
+npm run ci        # 전체 검사 (아키텍처 검사 → 테스트 → 빌드)
+npm run test      # 테스트만
+npm run test:watch
+```
+
+### 📌 검사 (CI)
+
+`npm run ci` 한 줄이 **관문의 정의**입니다. 아키텍처 검사 → Vitest → 프런트엔드 빌드를 순서대로 돌리고,
+`.github/workflows/ci.yml`(push·PR)과 `publish.yml`(릴리즈)은 모두 이 한 줄만 호출합니다.
+검사를 추가할 때는 워크플로가 아니라 `package.json`의 `ci` 스크립트에 넣어야 관문에서 누락되지 않습니다.
+
+| 검사 | 내용 |
+| --- | --- |
+| `scripts/check-architecture.mjs` | `CLAUDE.md`의 아키텍처 규칙(스토어 밖 `invoke()`, 인라인 `style=`, 빈 `catch`, 정규식 lookbehind 등)을 기계로 강제 |
+| `tests/csv.spec.js` | 단어 CSV 인코딩 판별(UTF-8 / CP949)과 파싱 |
+| `tests/keywords.spec.js` | 단어 매칭 정규식, 연속 공백 검사 |
+| `tests/pdf-highlight.spec.js` | 하이라이트 좌표 계산, 어노테이션·북마크 구조 |
+| `tests/pdf-pipeline.spec.js` | PDF 생성 → 하이라이트 → **실제 렌더링해 노란 픽셀 확인** |
+
+Rust는 `ci.yml`의 별도 잡에서 `cargo fmt --check` + `cargo clippy -- -D warnings`로 검사합니다.
+
+> **하이라이트 관련 수정은 반드시 회귀 테스트를 함께 추가하세요.**
+> 어노테이션이 정상적으로 들어가 있는데 화면에만 안 보이는 버그가 실제로 있었습니다.
+> 구조 검사만으로는 못 잡으므로 `pdf-pipeline.spec.js`처럼 렌더링 결과까지 확인해야 합니다.
+
+### 📌 릴리즈 절차
+
+1. `src-tauri/tauri.conf.json`의 `version`을 올립니다. (형식: `YYYY.M.D`)
+2. 커밋 후 `main`에 푸시합니다.
+3. GitHub Actions에서 **publish** 워크플로를 수동 실행합니다.
+   * `npm run ci`를 통과하고 같은 버전의 릴리즈가 없어야 빌드가 시작됩니다.
+   * Windows 포터블 zip과 macOS dmg를 만들어 **draft 릴리즈**로 올립니다.
+4. draft 릴리즈의 노트를 정리하고 직접 publish 합니다.
 
 ---
 
