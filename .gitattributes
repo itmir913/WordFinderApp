@@ -12,3 +12,4 @@
 *.woff2 binary
 *.pdf binary
 *.xlsx binary
+.githooks/** text eol=lf
